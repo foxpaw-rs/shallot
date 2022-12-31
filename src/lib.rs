@@ -17,7 +17,7 @@
 //! * [T; 0] through [T; 32]
 //! * Tuples up to size 16
 //!
-//! ## Common standard library Types
+//! ## Common Standard Library Types
 //! * String
 //! * Option<T>
 //! * Result<T, E>
@@ -49,7 +49,7 @@
 //! * OsStr
 //! * OsString
 //!
-//! ## Miscellaneous standard library Types
+//! ## Miscellaneous Standard Library Types
 //! * Duration
 //! * SystemTime
 //! * Path
