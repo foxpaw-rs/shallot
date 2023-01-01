@@ -6,8 +6,8 @@ use std::fmt::{self, Display, Formatter};
 
 /// Json.
 ///
-/// Json serialiser for the Shallot library. Will serialise and deserialise
-/// Serialise implementing structs into a JSON format.
+/// Json serialiser for the Shallot library. Will serialise Serialise
+/// implementing structs into a JSON format.
 ///
 /// # Examples
 /// ```rust

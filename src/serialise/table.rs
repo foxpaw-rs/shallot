@@ -6,8 +6,8 @@ use std::fmt::{self, Display, Formatter};
 
 /// Table.
 ///
-/// Table serialiser for the Shallot library. Will serialise and deserialise
-/// Serialise implementing structs into a JSON format.
+/// Table serialiser for the Shallot library. Will serialise Serialise
+/// implementing structs into a Tabluar format.
 ///
 /// # Examples
 /// ```rust

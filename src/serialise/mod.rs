@@ -13,9 +13,8 @@ pub use toml::Toml;
 
 /// Serialise.
 ///
-/// The Serialise trait marks that this type can be serialised. No methods are
-/// required to be implemented on the type, however, all the contained datan in
-/// the type must also be Serialise.
+/// The Serialise trait marks that this type can be serialised. Must simply
+/// pass through to the Serialiser to the correct visit method.
 pub trait Serialise {
     /// Accept a Serialiser.
     ///

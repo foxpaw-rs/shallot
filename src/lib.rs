@@ -74,4 +74,5 @@
 //!
 //! For further detailed examples, refer to the documentation.
 
+pub mod deserialise;
 pub mod serialise;

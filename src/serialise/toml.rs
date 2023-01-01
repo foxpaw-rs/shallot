@@ -6,8 +6,8 @@ use std::fmt::{self, Display, Formatter};
 
 /// Toml.
 ///
-/// Toml serialiser for the Shallot library. Will serialise and deserialise
-/// Serialise implementing structs into a JSON format.
+/// Toml serialiser for the Shallot library. Will serialise Serialise
+/// implementing structs into a TOML format.
 ///
 /// # Examples
 /// ```rust
