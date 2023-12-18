@@ -19,5 +19,5 @@
      clippy::suspicious,
  )]
 
+pub mod error;
 pub mod serialise;
-

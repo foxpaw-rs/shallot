@@ -65,5 +65,4 @@ pub trait Serialiser: Sized {
     ///
     /// Visit and serialise a unit type.
     fn visit_unit(&self) -> Self::Output;
-
 }
