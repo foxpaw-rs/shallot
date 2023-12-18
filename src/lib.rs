@@ -19,5 +19,6 @@
      clippy::suspicious,
  )]
 
+pub mod deserialise;
 pub mod error;
 pub mod serialise;
