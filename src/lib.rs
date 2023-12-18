@@ -1,14 +1,23 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+//! Shallot
+//!
+//! Shallot serialisation library to serialise and deserialise data.
+//!
+//! # Supports
+//! ## Primitives
+//! * ()
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#![deny(
+     clippy::all,
+     // clippy::cargo,
+     clippy::complexity,
+     clippy::correctness,
+     clippy::missing_docs_in_private_items,
+     clippy::nursery,
+     clippy::pedantic,
+     clippy::perf,
+     clippy::style,
+     clippy::suspicious,
+ )]
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod serialise;
+
