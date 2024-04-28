@@ -1,12 +1,16 @@
 //! Json module which houses the Json deserializer.
 
 use crate::deserialize::{Deserialize, Deserializer};
+use std::marker::PhantomData;
 
 /// Json deserializer which converts JSON strings into deserialize items.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Json;
+pub struct Json<'a> {
+    /// Phantomdata to hold the lifetime of the Input &str.
+    phantom: PhantomData<&'a ()>,
+}
 
-impl Json {
+impl<'a> Json<'a> {
     /// Create a new Json deserializer.
     ///
     /// # Examples
@@ -17,14 +21,15 @@ impl Json {
     /// ```
     #[must_use]
     pub const fn new() -> Self {
-        Self {}
+        Self {
+            phantom: PhantomData,
+        }
     }
 }
 
-impl Deserializer for Json {
+impl<'a> Deserializer for Json<'a> {
     /// The input type for this Deserializer.
-    /// Todo(Paul): This should accept a &str.
-    type Input = String;
+    type Input = &'a str;
 
     /// Deserialize the input into the required output type.
     ///
@@ -37,7 +42,7 @@ impl Deserializer for Json {
     ///
     /// fn main() -> Result<(), i8> {
     ///     let json = Json::new();
-    ///     let output: () = json.deserialize(&"null".to_owned())?;
+    ///     let output: () = json.deserialize(&"null")?;
     ///     Ok(())
     /// }
     /// ```
@@ -59,12 +64,12 @@ impl Deserializer for Json {
     ///
     /// fn main() -> Result<(), i8> {
     ///     let json = Json::new();
-    ///     let output: () = json.deserialize(&"null".to_owned())?;
+    ///     let output: () = json.deserialize(&"null")?;
     ///     Ok(())
     /// }
     /// ```
     fn visit_unit(&self, input: &Self::Input) -> Result<(), i8> {
-        if input == "null" {
+        if *input == "null" {
             Ok(())
         } else {
             Err(1)
@@ -79,7 +84,9 @@ mod tests {
     /// Test Json::new creates a Json as expected.
     #[test]
     fn json_new_correct() {
-        let expected = Json {};
+        let expected = Json {
+            phantom: PhantomData,
+        };
         let actual = Json::new();
         assert_eq!(expected, actual);
     }
@@ -88,7 +95,7 @@ mod tests {
     #[test]
     fn json_visit_unit_correct() {
         let expected = Ok(());
-        let actual = Json::new().deserialize(&"null".to_owned());
+        let actual = Json::new().deserialize(&"null");
         assert_eq!(expected, actual);
     }
 }
