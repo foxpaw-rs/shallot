@@ -2,6 +2,7 @@
 
 use crate::serialize::{Serialize, Serializer};
 
+/// Json serializer which converts serialize items into JSON strings.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Json;
 
