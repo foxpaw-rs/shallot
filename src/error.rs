@@ -5,11 +5,14 @@
 //! ```rust
 //! use shallot::error::{Error, Kind};
 //!
-//! let error = Error::new("Whoops, something went wrong!", Kind::General);
+//! let error = Error::new("Whoops, something went wrong!");
 //! ```
 
-use std::error;
-use std::fmt;
+mod syntax;
+
+use std::convert::From;
+use std::{error, fmt};
+pub use syntax::Syntax;
 
 /// Generic error which is used when providing an error from the library.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -28,13 +31,13 @@ impl Error {
     /// ```rust
     /// use shallot::error::{Error, Kind};
     ///
-    /// let error = Error::new("Whoops, something went wrong!", Kind::General);
+    /// let error = Error::new("Whoops, something went wrong!");
     /// ```
     #[must_use]
-    pub fn new(message: &str, kind: Kind) -> Self {
+    pub fn new(message: &str) -> Self {
         Self {
             message: message.to_owned(),
-            kind,
+            kind: Kind::General,
         }
     }
 }
@@ -46,7 +49,7 @@ impl fmt::Display for Error {
     /// ```rust
     /// use shallot::error::{Error, Kind};
     ///
-    /// let error = Error::new("Whoops, something went wrong!", Kind::General);
+    /// let error = Error::new("Whoops, something went wrong!");
     /// println!("{error}");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -55,6 +58,22 @@ impl fmt::Display for Error {
 }
 
 impl error::Error for Error {}
+
+impl From<Syntax> for Error {
+    /// Convert from a syntax error into a shallot Error.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::{Error, Syntax};
+    ///
+    /// let error: Error = Syntax::new(1, 1).unexpected("b").expected("a").into();
+    /// ```
+    fn from(item: Syntax) -> Self {
+        let mut error = Self::new(&item.to_string());
+        error.kind = Kind::Syntax;
+        error
+    }
+}
 
 /// The available error types. These represent all the error types encountered
 /// through the Shallot library.
@@ -78,7 +97,7 @@ mod tests {
             message: "Whoops, something went wrong!".to_owned(),
             kind: Kind::General,
         };
-        let actual = Error::new("Whoops, something went wrong!", Kind::General);
+        let actual = Error::new("Whoops, something went wrong!");
         assert_eq!(expected, actual);
     }
 
@@ -86,7 +105,16 @@ mod tests {
     #[test]
     fn error_fmt_correct() {
         let expected = "[Error]: Whoops, something went wrong!";
-        let actual = Error::new("Whoops, something went wrong!", Kind::General).to_string();
+        let actual = Error::new("Whoops, something went wrong!").to_string();
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Error::from functions correctly from Syntax.
+    #[test]
+    fn error_from_syntax_correct() {
+        let mut expected = Error::new("Syntax error at (1, 1)");
+        expected.kind = Kind::Syntax;
+        let actual = Syntax::new(1, 1).into();
         assert_eq!(expected, actual);
     }
 }

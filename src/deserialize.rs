@@ -1,7 +1,6 @@
 //! Deserialize module which houses the Deserialize and Deserializer traits
 //! used to handle the deserialization process. Also houses the implementation
 //! of Deserialize on supported core items.
-//! Todo(Paul): Implement actual error handling instead of the dummy i8 (upto making Syntax error).
 
 mod json;
 pub use json::Json;
