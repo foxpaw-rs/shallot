@@ -11,8 +11,10 @@
 mod syntax;
 
 use std::convert::From;
-use std::{error, fmt};
+use std::{error, fmt, result};
 pub use syntax::Syntax;
+
+pub type Result<T> = result::Result<T, Error>;
 
 /// Generic error which is used when providing an error from the library.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]

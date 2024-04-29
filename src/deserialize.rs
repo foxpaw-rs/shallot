@@ -3,7 +3,10 @@
 //! of Deserialize on supported core items.
 
 mod json;
+
+use crate::error::Result;
 pub use json::Json;
+
 
 /// Trait to implement on deserializable items. Defines how the item is
 /// deserialized.
@@ -14,7 +17,7 @@ pub trait Deserialize {
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
-    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self, i8>
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
     where
         S: Deserializer,
         Self: Sized;
@@ -27,7 +30,7 @@ impl Deserialize for () {
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
-    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self, i8>
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
     where
         S: Deserializer,
     {
@@ -47,7 +50,7 @@ pub trait Deserializer {
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
-    fn deserialize<S>(&self, input: &Self::Input) -> Result<S, i8>
+    fn deserialize<S>(&self, input: &Self::Input) -> Result<S>
     where
         S: Deserialize;
 
@@ -55,5 +58,5 @@ pub trait Deserializer {
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
-    fn visit_unit(&self, input: &Self::Input) -> Result<(), i8>;
+    fn visit_unit(&self, input: &Self::Input) -> Result<()>;
 }

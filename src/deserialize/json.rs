@@ -1,6 +1,7 @@
 //! Json module which houses the Json deserializer.
 
 use crate::deserialize::{Deserialize, Deserializer};
+use crate::error::{Result, Syntax};
 use std::marker::PhantomData;
 
 /// Json deserializer which converts JSON strings into deserialize items.
@@ -15,6 +16,7 @@ impl<'a> Json<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// use shallot::error::Result;
     /// use shallot::deserialize::Json;
     ///
     /// let json = Json::new();
@@ -38,15 +40,16 @@ impl<'a> Deserializer for Json<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// use shallot::error::Result;
     /// use shallot::deserialize::{Deserializer, Json};
     ///
-    /// fn main() -> Result<(), i8> {
+    /// fn main() -> Result<()> {
     ///     let json = Json::new();
     ///     let output: () = json.deserialize(&"null")?;
     ///     Ok(())
     /// }
     /// ```
-    fn deserialize<S>(&self, input: &Self::Input) -> Result<S, i8>
+    fn deserialize<S>(&self, input: &Self::Input) -> Result<S>
     where
         S: Deserialize,
     {
@@ -60,19 +63,21 @@ impl<'a> Deserializer for Json<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// use shallot::error::Result;
     /// use shallot::deserialize::{Deserializer, Json};
     ///
-    /// fn main() -> Result<(), i8> {
+    /// fn main() -> Result<()> {
     ///     let json = Json::new();
     ///     let output: () = json.deserialize(&"null")?;
     ///     Ok(())
     /// }
     /// ```
-    fn visit_unit(&self, input: &Self::Input) -> Result<(), i8> {
+    fn visit_unit(&self, input: &Self::Input) -> Result<()> {
         if *input == "null" {
             Ok(())
         } else {
-            Err(1)
+            // Todo(Paul): Track row/column and correct this placeholder
+            Err(Syntax::new(1, 1).into())
         }
     }
 }
