@@ -126,7 +126,7 @@ mod tests {
 
     /// Test Syntax::new creates a Syntax as expected.
     #[test]
-    fn error_new_correct() {
+    fn new_correct() {
         let expected = Syntax {
             col: 1,
             expected: None,
@@ -139,7 +139,7 @@ mod tests {
 
     /// Test Syntax::expected sets the expected value.
     #[test]
-    fn error_expected_correct() {
+    fn expected_correct() {
         let expected = Some("a".to_owned());
         let actual = Syntax::new(1, 1).expected("a").expected;
         assert_eq!(expected, actual);
@@ -147,7 +147,7 @@ mod tests {
 
     /// Test Syntax::unexpected sets the unexpected value.
     #[test]
-    fn error_unexpected_correct() {
+    fn unexpected_correct() {
         let expected = Some("a".to_owned());
         let actual = Syntax::new(1, 1).unexpected("a").unexpected;
         assert_eq!(expected, actual);
@@ -155,7 +155,7 @@ mod tests {
 
     /// Test Syntax::fmt formats with no expected or unexpected values.
     #[test]
-    fn error_fmt_none() {
+    fn fmt_none() {
         let expected = "Syntax error at (1, 1)".to_owned();
         let actual = Syntax::new(1, 1).to_string();
         assert_eq!(expected, actual);
@@ -163,7 +163,7 @@ mod tests {
 
     /// Test Syntax::fmt formats with an expected value.
     #[test]
-    fn error_fmt_expected() {
+    fn fmt_expected() {
         let expected = "Syntax error, expected \"a\" at (1, 1)".to_owned();
         let actual = Syntax::new(1, 1).expected("a").to_string();
         assert_eq!(expected, actual);
@@ -171,7 +171,7 @@ mod tests {
 
     /// Test Syntax::fmt formats with an unexpected value.
     #[test]
-    fn error_fmt_unexpected() {
+    fn fmt_unexpected() {
         let expected = "Syntax error, unexpected \"b\" at (1, 1)".to_owned();
         let actual = Syntax::new(1, 1).unexpected("b").to_string();
         assert_eq!(expected, actual);
@@ -179,7 +179,7 @@ mod tests {
 
     /// Test Syntax::fmt formats with expected and unexpected values.
     #[test]
-    fn error_fmt_both() {
+    fn fmt_both() {
         let expected = "Syntax error, unexpected \"b\", expected \"a\" at (1, 1)".to_owned();
         let actual = Syntax::new(1, 1).unexpected("b").expected("a").to_string();
         assert_eq!(expected, actual);

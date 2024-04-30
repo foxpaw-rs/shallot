@@ -7,7 +7,6 @@ mod json;
 use crate::error::Result;
 pub use json::Json;
 
-
 /// Trait to implement on deserializable items. Defines how the item is
 /// deserialized.
 pub trait Deserialize {

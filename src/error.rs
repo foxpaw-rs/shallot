@@ -94,7 +94,7 @@ mod tests {
 
     /// Test Error::new creates a Error as expected.
     #[test]
-    fn error_new_correct() {
+    fn new_correct() {
         let expected = Error {
             message: "Whoops, something went wrong!".to_owned(),
             kind: Kind::General,
@@ -105,7 +105,7 @@ mod tests {
 
     /// Test Error::fmt functions correctly.
     #[test]
-    fn error_fmt_correct() {
+    fn fmt_correct() {
         let expected = "[Error]: Whoops, something went wrong!";
         let actual = Error::new("Whoops, something went wrong!").to_string();
         assert_eq!(expected, actual);
@@ -113,7 +113,7 @@ mod tests {
 
     /// Test Error::from functions correctly from Syntax.
     #[test]
-    fn error_from_syntax_correct() {
+    fn from_syntax_correct() {
         let mut expected = Error::new("Syntax error at (1, 1)");
         expected.kind = Kind::Syntax;
         let actual = Syntax::new(1, 1).into();

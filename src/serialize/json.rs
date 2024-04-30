@@ -60,7 +60,7 @@ mod tests {
 
     /// Test Json::new creates a Json as expected.
     #[test]
-    fn json_new_correct() {
+    fn new_correct() {
         let expected = Json {};
         let actual = Json::new();
         assert_eq!(expected, actual);
@@ -68,7 +68,7 @@ mod tests {
 
     /// Test Json::visit_unit correctly serializes a unit type.
     #[test]
-    fn json_visit_unit_correct() {
+    fn visit_unit_correct() {
         let expected = "null".to_owned();
         let actual = Json::new().visit_unit();
         assert_eq!(expected, actual);

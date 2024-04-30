@@ -2,11 +2,18 @@
 
 use crate::deserialize::{Deserialize, Deserializer};
 use crate::error::{Result, Syntax};
+use std::cell::Cell;
 use std::marker::PhantomData;
 
 /// Json deserializer which converts JSON strings into deserialize items.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Json<'a> {
+    /// The current column number.
+    col: Cell<usize>,
+
+    /// The current row number.
+    row: Cell<usize>,
+
     /// Phantomdata to hold the lifetime of the Input &str.
     phantom: PhantomData<&'a ()>,
 }
@@ -24,6 +31,8 @@ impl<'a> Json<'a> {
     #[must_use]
     pub const fn new() -> Self {
         Self {
+            col: Cell::new(1),
+            row: Cell::new(1),
             phantom: PhantomData,
         }
     }
@@ -76,8 +85,7 @@ impl<'a> Deserializer for Json<'a> {
         if *input == "null" {
             Ok(())
         } else {
-            // Todo(Paul): Track row/column and correct this placeholder
-            Err(Syntax::new(1, 1).into())
+            Err(Syntax::new(self.row.get(), self.col.get()).unexpected(input).expected("null").into())
         }
     }
 }
@@ -88,8 +96,10 @@ mod tests {
 
     /// Test Json::new creates a Json as expected.
     #[test]
-    fn json_new_correct() {
+    fn new_correct() {
         let expected = Json {
+            col: Cell::new(1),
+            row: Cell::new(1),
             phantom: PhantomData,
         };
         let actual = Json::new();
@@ -98,9 +108,23 @@ mod tests {
 
     /// Test Json::visit_unit correctly deserializes a unit type.
     #[test]
-    fn json_visit_unit_correct() {
+    fn visit_unit_correct() {
         let expected = Ok(());
+        let actual = Json::new().visit_unit(&"null");
+        assert_eq!(expected, actual);
+
         let actual = Json::new().deserialize(&"null");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_unit correctly errors upon unexpected value.
+    #[test]
+    fn visit_unit_incorrect() {
+        let expected = Err(Syntax::new(1, 1).unexpected("fail").expected("null").into());
+        let actual = Json::new().visit_unit(&"fail");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"fail");
         assert_eq!(expected, actual);
     }
 }
