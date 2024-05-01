@@ -65,6 +65,39 @@ impl<'a> Deserializer for Json<'a> {
         S::accept(self, input)
     }
 
+    /// Visit and deserialize a bool type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: bool = json.deserialize(&"true")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_bool(&self, input: &Self::Input) -> Result<bool> {
+        match *input {
+            "true" => {
+                self.col.set(self.col.get() + 4);
+                Ok(true)
+            }
+            "false" => {
+                self.col.set(self.col.get() + 5);
+                Ok(false)
+            }
+            _ => Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(input)
+                .expected("boolean")
+                .into()),
+        }
+    }
+
     /// Visit and deserialize a unit type.
     ///
     /// # Errors
@@ -86,7 +119,10 @@ impl<'a> Deserializer for Json<'a> {
             self.col.set(self.col.get() + 4);
             Ok(())
         } else {
-            Err(Syntax::new(self.row.get(), self.col.get()).unexpected(input).expected("null").into())
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(input)
+                .expected("null")
+                .into())
         }
     }
 }
@@ -123,6 +159,42 @@ mod tests {
     fn visit_unit_incorrect() {
         let expected = Err(Syntax::new(1, 1).unexpected("fail").expected("null").into());
         let actual = Json::new().visit_unit(&"fail");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"fail");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_bool correctly deserializes a true bool type.
+    #[test]
+    fn visit_bool_true() {
+        let expected = Ok(true);
+        let actual = Json::new().visit_bool(&"true");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"true");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_bool correctly deserializes a false bool type.
+    #[test]
+    fn visit_bool_false() {
+        let expected = Ok(false);
+        let actual = Json::new().visit_bool(&"false");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"false");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_bool correctly errors upon unexpected value.
+    #[test]
+    fn visit_bool_incorrect() {
+        let expected = Err(Syntax::new(1, 1)
+            .unexpected("fail")
+            .expected("boolean")
+            .into());
+        let actual = Json::new().visit_bool(&"fail");
         assert_eq!(expected, actual);
 
         let actual = Json::new().deserialize(&"fail");

@@ -36,7 +36,7 @@ impl Serialize for bool {
     where
         S: Serializer,
     {
-        serializer.visit_bool(&self)
+        serializer.visit_bool(self)
     }
 }
 
