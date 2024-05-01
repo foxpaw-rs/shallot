@@ -83,6 +83,7 @@ impl<'a> Deserializer for Json<'a> {
     /// ```
     fn visit_unit(&self, input: &Self::Input) -> Result<()> {
         if *input == "null" {
+            self.col.set(self.col.get() + 4);
             Ok(())
         } else {
             Err(Syntax::new(self.row.get(), self.col.get()).unexpected(input).expected("null").into())
