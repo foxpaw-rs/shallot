@@ -28,6 +28,18 @@ impl Serialize for () {
     }
 }
 
+impl Serialize for bool {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_bool(&self)
+    }
+}
+
 /// Trait to implement on an item that conducts the serialization, and defines
 /// how data is serialized. Interaction with this should be done using the
 /// serialize method, which in turn calls the required visit methods to
@@ -40,6 +52,9 @@ pub trait Serializer {
     fn serialize<S>(&self, input: &S) -> Self::Output
     where
         S: Serialize;
+
+    /// Visit and serialize a bool type.
+    fn visit_bool(&self, input: &bool) -> Self::Output;
 
     /// Visit and serialize a unit type.
     fn visit_unit(&self) -> Self::Output;

@@ -40,6 +40,19 @@ impl Serializer for Json {
         input.accept(self)
     }
 
+    /// Visit and serialize a bool type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&true);
+    /// ```
+    fn visit_bool(&self, input: &bool) -> Self::Output {
+        input.to_string()
+    }
+
     /// Visit and serialize a unit type.
     ///
     /// # Examples
@@ -74,6 +87,28 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().serialize(&());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_bool correctly serializes a true bool type.
+    #[test]
+    fn visit_bool_true() {
+        let expected = "true".to_owned();
+        let actual = Json::new().visit_bool(&true);
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&true);
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_bool correctly serializes a false bool type.
+    #[test]
+    fn visit_bool_false() {
+        let expected = "false".to_owned();
+        let actual = Json::new().visit_bool(&false);
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&false);
         assert_eq!(expected, actual);
     }
 }
