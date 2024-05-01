@@ -109,17 +109,6 @@ impl fmt::Display for Syntax {
 
 impl Error for Syntax {}
 
-/// The available error types. These represent all the error types encountered
-/// through the Shallot library.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum Kind {
-    /// A general error.
-    General,
-
-    /// A syntax error.
-    Syntax,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
