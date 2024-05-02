@@ -8,8 +8,10 @@
 //! let error = Error::new("Whoops, something went wrong!");
 //! ```
 
+mod overflow;
 mod syntax;
 
+pub use overflow::Overflow;
 use std::convert::From;
 use std::{error, fmt, result};
 pub use syntax::Syntax;
@@ -61,6 +63,22 @@ impl fmt::Display for Error {
 
 impl error::Error for Error {}
 
+impl From<Overflow> for Error {
+    /// Convert from a syntax error into a shallot Error.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::{Error, Overflow};
+    ///
+    /// let error: Error = Overflow::new(1, 1).value("i8").into();
+    /// ```
+    fn from(item: Overflow) -> Self {
+        let mut error = Self::new(&item.to_string());
+        error.kind = Kind::Overflow;
+        error
+    }
+}
+
 impl From<Syntax> for Error {
     /// Convert from a syntax error into a shallot Error.
     ///
@@ -83,6 +101,9 @@ impl From<Syntax> for Error {
 pub enum Kind {
     /// A general error.
     General,
+
+    /// An overflow error.
+    Overflow,
 
     /// A syntax error.
     Syntax,
@@ -108,6 +129,15 @@ mod tests {
     fn fmt_correct() {
         let expected = "[Error]: Whoops, something went wrong!";
         let actual = Error::new("Whoops, something went wrong!").to_string();
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Error::from functions correctly from Overflow.
+    #[test]
+    fn from_overflow_correct() {
+        let mut expected = Error::new("Overflow error at (1, 1)");
+        expected.kind = Kind::Overflow;
+        let actual = Overflow::new(1, 1).into();
         assert_eq!(expected, actual);
     }
 
