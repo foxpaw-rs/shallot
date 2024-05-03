@@ -1,7 +1,7 @@
 //! Json module which houses the Json deserializer.
 
 use crate::deserialize::{Deserialize, Deserializer};
-use crate::error::{Overflow, Result, Syntax};
+use crate::error::{Error, Overflow, Result, Syntax};
 use std::cell::Cell;
 use std::marker::PhantomData;
 use std::num::{IntErrorKind, ParseIntError};
@@ -35,6 +35,43 @@ impl<'a> Json<'a> {
             col: Cell::new(1),
             row: Cell::new(1),
             phantom: PhantomData,
+        }
+    }
+
+    /// Convert a ParseIntError into an error type.
+    fn convert_int_error(&self, err: ParseIntError, input: &<Self as Deserializer>::Input, kind: &str) -> Error {
+        match err.kind() {
+            IntErrorKind::Empty => Syntax::new(self.row.get(), self.col.get())
+                .expected(kind)
+                .into(),
+            IntErrorKind::InvalidDigit => {
+                for c in input.chars() {
+                    match c {
+                        '0'..='9' => self.col.set(self.col.get() + 1),
+                        c if c.is_whitespace() => {
+                            if c == '\r' || c == '\n' {
+                                self.row.set(self.row.get() + 1);
+                                self.col.set(1);
+                            }
+                            return Syntax::new(self.row.get(), self.col.get())
+                                .unexpected("whitespace")
+                                .into();
+                        }
+                        _ => {
+                            return Syntax::new(self.row.get(), self.col.get())
+                                .unexpected(&c.to_string())
+                                .into()
+                        }
+                    }
+                }
+                Syntax::new(self.row.get(), self.col.get()).into()
+            }
+            IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => {
+                Overflow::new(self.row.get(), self.col.get())
+                    .kind(kind)
+                    .into()
+            }
+            _ => Syntax::new(self.row.get(), self.col.get()).into(),
         }
     }
 }
@@ -128,39 +165,7 @@ impl<'a> Deserializer for Json<'a> {
             };
         }
 
-        input
-            .parse::<i8>()
-            .map_err(|err: ParseIntError| match err.kind() {
-                IntErrorKind::Empty => Syntax::new(self.row.get(), self.col.get())
-                    .expected("i8")
-                    .into(),
-                IntErrorKind::InvalidDigit => {
-                    for c in input.chars() {
-                        match c {
-                            '0'..='9' => self.col.set(self.col.get() + 1),
-                            c if c.is_whitespace() => {
-                                self.row.set(self.row.get() + 1);
-                                self.col.set(1);
-                                return Syntax::new(self.row.get(), self.col.get())
-                                    .unexpected("whitespace")
-                                    .into();
-                            }
-                            _ => {
-                                return Syntax::new(self.row.get(), self.col.get())
-                                    .unexpected(&c.to_string())
-                                    .into()
-                            }
-                        }
-                    }
-                    Syntax::new(self.row.get(), self.col.get()).into()
-                }
-                IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => {
-                    Overflow::new(self.row.get(), self.col.get())
-                        .value("i8")
-                        .into()
-                }
-                _ => Syntax::new(self.row.get(), self.col.get()).into(),
-            })
+        input.parse::<i8>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "i8"))
     }
 
     /// Visit and deserialize a unit type.
@@ -313,6 +318,17 @@ mod tests {
     /// Test Json::visit_i8 correctly errors upon an invalid whitespace.
     #[test]
     fn visit_i8_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_i8(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i8 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_i8_invalid_newline() {
         let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
         let actual = Json::new().visit_i8(&"1\n2");
         assert_eq!(expected, actual);
@@ -324,7 +340,7 @@ mod tests {
     /// Test Json::visit_i8 correctly errors upon overflow.
     #[test]
     fn visit_i8_overflow() {
-        let expected = Err(Overflow::new(1, 1).value("i8").into());
+        let expected = Err(Overflow::new(1, 1).kind("i8").into());
         let actual = Json::new().visit_i8(&"128");
         assert_eq!(expected, actual);
 
@@ -335,7 +351,7 @@ mod tests {
     /// Test Json::visit_i8 correctly errors upon negative overflow.
     #[test]
     fn visit_i8_negative_overflow() {
-        let expected = Err(Overflow::new(1, 1).value("i8").into());
+        let expected = Err(Overflow::new(1, 1).kind("i8").into());
         let actual = Json::new().visit_i8(&"-129");
         assert_eq!(expected, actual);
 

@@ -5,7 +5,7 @@
 //! ```rust
 //! use shallot::error::Overflow;
 //!
-//! let error = Overflow::new(1, 1).value("i8");
+//! let error = Overflow::new(1, 1).kind("i8");
 //! ```
 
 use std::error::Error;
@@ -20,8 +20,8 @@ pub struct Overflow {
     /// The row where the overflow error occurs.
     row: usize,
 
-    /// What type of value overflowed.
-    value: Option<String>,
+    /// What kind of value overflowed.
+    kind: Option<String>,
 }
 
 impl Overflow {
@@ -38,21 +38,21 @@ impl Overflow {
         Self {
             col,
             row,
-            value: None,
+            kind: None,
         }
     }
 
-    /// Set the type value, to notify the user what type overflowed.
+    /// Set the type kind, to notify the user what type overflowed.
     ///
     /// # Examples
     /// ```rust
     /// use shallot::error::Overflow;
     ///
-    /// let error = Overflow::new(1, 1).value("i8");
+    /// let error = Overflow::new(1, 1).kind("i8");
     /// ```
     #[must_use]
-    pub fn value(mut self, value: &str) -> Self {
-        self.value = Some(value.to_owned());
+    pub fn kind(mut self, kind: &str) -> Self {
+        self.kind = Some(kind.to_owned());
         self
     }
 }
@@ -64,11 +64,11 @@ impl fmt::Display for Overflow {
     /// ```rust
     /// use shallot::error::Overflow;
     ///
-    /// let error = Overflow::new(1, 1).value("i8");
+    /// let error = Overflow::new(1, 1).kind("i8");
     /// println!("{error}");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.value {
+        match &self.kind {
             None => write!(f, "Overflow error at ({}, {})", self.row, self.col),
             Some(v) => write!(
                 f,
@@ -91,21 +91,21 @@ mod tests {
         let expected = Overflow {
             col: 1,
             row: 1,
-            value: None,
+            kind: None,
         };
         let actual = Overflow::new(1, 1);
         assert_eq!(expected, actual);
     }
 
-    /// Test Overflow::value sets the type value.
+    /// Test Overflow::kind sets the type kind.
     #[test]
-    fn value_correct() {
-        let value = Some("i8".to_owned());
-        let actual = Overflow::new(1, 1).value("i8").value;
-        assert_eq!(value, actual);
+    fn kind_correct() {
+        let kind = Some("i8".to_owned());
+        let actual = Overflow::new(1, 1).kind("i8").kind;
+        assert_eq!(kind, actual);
     }
 
-    /// Test Overflow::fmt formats with no set type value.
+    /// Test Overflow::fmt formats with no set type kind.
     #[test]
     fn fmt_none() {
         let expected = "Overflow error at (1, 1)".to_owned();
@@ -113,11 +113,11 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Overflow::fmt formats with a type value.
+    /// Test Overflow::fmt formats with a type kind.
     #[test]
     fn fmt_type() {
         let expected = "Overflow error for i8 type at (1, 1)".to_owned();
-        let actual = Overflow::new(1, 1).value("i8").to_string();
+        let actual = Overflow::new(1, 1).kind("i8").to_string();
         assert_eq!(expected, actual);
     }
 }

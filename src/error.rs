@@ -70,7 +70,7 @@ impl From<Overflow> for Error {
     /// ```rust
     /// use shallot::error::{Error, Overflow};
     ///
-    /// let error: Error = Overflow::new(1, 1).value("i8").into();
+    /// let error: Error = Overflow::new(1, 1).kind("i8").into();
     /// ```
     fn from(item: Overflow) -> Self {
         let mut error = Self::new(&item.to_string());
