@@ -136,7 +136,7 @@ impl<'a> Deserializer for Json<'a> {
         }
     }
 
-    /// Visit and deserialize a i8 type.
+    /// Visit and deserialize an i8 type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
@@ -153,19 +153,149 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_i8(&self, input: &Self::Input) -> Result<i8> {
-        let mut chars = input.chars();
-        if chars.next() == Some('0') {
-            return if chars.next().is_none() {
-                Ok(0)
-            } else {
-                Err(Syntax::new(self.row.get(), self.col.get())
-                    .unexpected("0")
-                    .expected("1-9")
-                    .into())
-            };
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
         }
 
         input.parse::<i8>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "i8"))
+    }
+
+    /// Visit and deserialize an i16 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: i16 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_i16(&self, input: &Self::Input) -> Result<i16> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<i16>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "i16"))
+    }
+
+    /// Visit and deserialize an i32 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: i32 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_i32(&self, input: &Self::Input) -> Result<i32> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<i32>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "i32"))
+    }
+
+    /// Visit and deserialize an i64 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: i64 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_i64(&self, input: &Self::Input) -> Result<i64> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<i64>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "i64"))
+    }
+
+    /// Visit and deserialize an i128 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: i128 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_i128(&self, input: &Self::Input) -> Result<i128> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<i128>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "i128"))
+    }
+
+    /// Visit and deserialize an isize type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: isize = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_isize(&self, input: &Self::Input) -> Result<isize> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<isize>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "isize"))
     }
 
     /// Visit and deserialize a unit type.
@@ -340,22 +470,584 @@ mod tests {
     /// Test Json::visit_i8 correctly errors upon overflow.
     #[test]
     fn visit_i8_overflow() {
+        let value = i8::MAX.to_string() + "0";
         let expected = Err(Overflow::new(1, 1).kind("i8").into());
-        let actual = Json::new().visit_i8(&"128");
+        let actual = Json::new().visit_i8(&value.as_str());
         assert_eq!(expected, actual);
 
-        let actual = Json::new().deserialize(&"128");
+        let actual = Json::new().deserialize(&value.as_str());
         assert_eq!(expected, actual);
     }
 
     /// Test Json::visit_i8 correctly errors upon negative overflow.
     #[test]
     fn visit_i8_negative_overflow() {
+        let value = i8::MIN.to_string() + "0";
         let expected = Err(Overflow::new(1, 1).kind("i8").into());
-        let actual = Json::new().visit_i8(&"-129");
+        let actual = Json::new().visit_i8(&value.as_str());
         assert_eq!(expected, actual);
 
-        let actual = Json::new().deserialize(&"-129");
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly deserializes an i16 type.
+    #[test]
+    fn visit_i16_positive() {
+        let expected = Ok(1_i16);
+        let actual = Json::new().visit_i16(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly deserializes a negative i16 type.
+    #[test]
+    fn visit_i16_negative() {
+        let expected = Ok(-1_i16);
+        let actual = Json::new().visit_i16(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly deserializes a zero i16 type.
+    #[test]
+    fn visit_i16_zero() {
+        let expected = Ok(0_i16);
+        let actual = Json::new().visit_i16(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon empty value.
+    #[test]
+    fn visit_i16_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("i16").into());
+        let actual = Json::new().visit_i16(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon a leading zero.
+    #[test]
+    fn visit_i16_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_i16(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon an invalid character.
+    #[test]
+    fn visit_i16_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_i16(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_i16_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_i16(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_i16_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_i16(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon overflow.
+    #[test]
+    fn visit_i16_overflow() {
+        let value = i16::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i16").into());
+        let actual = Json::new().visit_i16(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i16 correctly errors upon negative overflow.
+    #[test]
+    fn visit_i16_negative_overflow() {
+        let value = i16::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i16").into());
+        let actual = Json::new().visit_i16(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly deserializes an i32 type.
+    #[test]
+    fn visit_i32_positive() {
+        let expected = Ok(1_i32);
+        let actual = Json::new().visit_i32(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly deserializes a negative i32 type.
+    #[test]
+    fn visit_i32_negative() {
+        let expected = Ok(-1_i32);
+        let actual = Json::new().visit_i32(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly deserializes a zero i32 type.
+    #[test]
+    fn visit_i32_zero() {
+        let expected = Ok(0_i32);
+        let actual = Json::new().visit_i32(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon empty value.
+    #[test]
+    fn visit_i32_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("i32").into());
+        let actual = Json::new().visit_i32(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon a leading zero.
+    #[test]
+    fn visit_i32_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_i32(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon an invalid character.
+    #[test]
+    fn visit_i32_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_i32(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_i32_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_i32(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_i32_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_i32(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon overflow.
+    #[test]
+    fn visit_i32_overflow() {
+        let value = i32::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i32").into());
+        let actual = Json::new().visit_i32(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i32 correctly errors upon negative overflow.
+    #[test]
+    fn visit_i32_negative_overflow() {
+        let value = i32::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i32").into());
+        let actual = Json::new().visit_i32(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly deserializes an i64 type.
+    #[test]
+    fn visit_i64_positive() {
+        let expected = Ok(1_i64);
+        let actual = Json::new().visit_i64(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly deserializes a negative i64 type.
+    #[test]
+    fn visit_i64_negative() {
+        let expected = Ok(-1_i64);
+        let actual = Json::new().visit_i64(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly deserializes a zero i64 type.
+    #[test]
+    fn visit_i64_zero() {
+        let expected = Ok(0_i64);
+        let actual = Json::new().visit_i64(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon empty value.
+    #[test]
+    fn visit_i64_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("i64").into());
+        let actual = Json::new().visit_i64(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon a leading zero.
+    #[test]
+    fn visit_i64_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_i64(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon an invalid character.
+    #[test]
+    fn visit_i64_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_i64(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_i64_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_i64(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_i64_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_i64(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon overflow.
+    #[test]
+    fn visit_i64_overflow() {
+        let value = i64::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i64").into());
+        let actual = Json::new().visit_i64(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i64 correctly errors upon negative overflow.
+    #[test]
+    fn visit_i64_negative_overflow() {
+        let value = i64::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i64").into());
+        let actual = Json::new().visit_i64(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly deserializes an i128 type.
+    #[test]
+    fn visit_i128_positive() {
+        let expected = Ok(1_i128);
+        let actual = Json::new().visit_i128(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly deserializes a negative i128 type.
+    #[test]
+    fn visit_i128_negative() {
+        let expected = Ok(-1_i128);
+        let actual = Json::new().visit_i128(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly deserializes a zero i128 type.
+    #[test]
+    fn visit_i128_zero() {
+        let expected = Ok(0_i128);
+        let actual = Json::new().visit_i128(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon empty value.
+    #[test]
+    fn visit_i128_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("i128").into());
+        let actual = Json::new().visit_i128(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon a leading zero.
+    #[test]
+    fn visit_i128_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_i128(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon an invalid character.
+    #[test]
+    fn visit_i128_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_i128(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_i128_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_i128(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_i128_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_i128(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon overflow.
+    #[test]
+    fn visit_i128_overflow() {
+        let value = i128::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i128").into());
+        let actual = Json::new().visit_i128(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i128 correctly errors upon negative overflow.
+    #[test]
+    fn visit_i128_negative_overflow() {
+        let value = i128::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("i128").into());
+        let actual = Json::new().visit_i128(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly deserializes an isize type.
+    #[test]
+    fn visit_isize_positive() {
+        let expected = Ok(1_isize);
+        let actual = Json::new().visit_isize(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly deserializes a negative isize type.
+    #[test]
+    fn visit_isize_negative() {
+        let expected = Ok(-1_isize);
+        let actual = Json::new().visit_isize(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly deserializes a zero isize type.
+    #[test]
+    fn visit_isize_zero() {
+        let expected = Ok(0_isize);
+        let actual = Json::new().visit_isize(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon empty value.
+    #[test]
+    fn visit_isize_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("isize").into());
+        let actual = Json::new().visit_isize(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon a leading zero.
+    #[test]
+    fn visit_isize_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_isize(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon an invalid character.
+    #[test]
+    fn visit_isize_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_isize(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_isize_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_isize(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon an invalid newline.
+    #[test]
+    fn visit_isize_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_isize(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon overflow.
+    #[test]
+    fn visit_isize_overflow() {
+        let value = i128::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("isize").into());
+        let actual = Json::new().visit_isize(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_isize correctly errors upon negative overflow.
+    #[test]
+    fn visit_isize_negative_overflow() {
+        let value = i128::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("isize").into());
+        let actual = Json::new().visit_isize(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
         assert_eq!(expected, actual);
     }
 
