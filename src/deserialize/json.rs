@@ -38,7 +38,7 @@ impl<'a> Json<'a> {
         }
     }
 
-    /// Convert a ParseIntError into an error type.
+    /// Convert a ParseIntError into a library error type.
     fn convert_int_error(&self, err: ParseIntError, input: &<Self as Deserializer>::Input, kind: &str) -> Error {
         match err.kind() {
             IntErrorKind::Empty => Syntax::new(self.row.get(), self.col.get())
@@ -298,6 +298,141 @@ impl<'a> Deserializer for Json<'a> {
         input.parse::<isize>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "isize"))
     }
 
+    /// Visit and deserialize an u8 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: u8 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_u8(&self, input: &Self::Input) -> Result<u8> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<u8>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "u8"))
+    }
+
+    /// Visit and deserialize an u16 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: u16 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_u16(&self, input: &Self::Input) -> Result<u16> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<u16>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "u16"))
+    }
+
+    /// Visit and deserialize an u32 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: u32 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_u32(&self, input: &Self::Input) -> Result<u32> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<u32>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "u32"))
+    }
+
+    /// Visit and deserialize an u64 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: u64 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_u64(&self, input: &Self::Input) -> Result<u64> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<u64>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "u64"))
+    }
+
+    /// Visit and deserialize an u128 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: u128 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_u128(&self, input: &Self::Input) -> Result<u128> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<u128>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "u128"))
+    }
+
     /// Visit and deserialize a unit type.
     ///
     /// # Errors
@@ -324,6 +459,33 @@ impl<'a> Deserializer for Json<'a> {
                 .expected("null")
                 .into())
         }
+    }
+
+    /// Visit and deserialize an usize type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: usize = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_usize(&self, input: &Self::Input) -> Result<usize> {
+        if input.starts_with("0") && input.len() > 1 {
+            return Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected("0")
+                .expected("1-9")
+                .into())
+        }
+
+        input.parse::<usize>().map_err(|err: ParseIntError| self.convert_int_error(err, input, "usize"))
     }
 }
 
@@ -1051,6 +1213,506 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    /// Test Json::visit_u8 correctly deserializes an u8 type.
+    #[test]
+    fn visit_u8_positive() {
+        let expected = Ok(1_u8);
+        let actual = Json::new().visit_u8(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly deserializes a zero u8 type.
+    #[test]
+    fn visit_u8_zero() {
+        let expected = Ok(0_u8);
+        let actual = Json::new().visit_u8(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon empty value.
+    #[test]
+    fn visit_u8_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("u8").into());
+        let actual = Json::new().visit_u8(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon a leading zero.
+    #[test]
+    fn visit_u8_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_u8(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon an invalid character.
+    #[test]
+    fn visit_u8_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_u8(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_u8_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_u8(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_u8_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_u8(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon overflow.
+    #[test]
+    fn visit_u8_overflow() {
+        let value = u8::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("u8").into());
+        let actual = Json::new().visit_u8(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u8 correctly errors upon negative values.
+    #[test]
+    fn visit_u8_negative() {
+        let expected = Err(Syntax::new(1, 1).unexpected("-").into());
+        let actual = Json::new().visit_u8(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly deserializes an u16 type.
+    #[test]
+    fn visit_u16_positive() {
+        let expected = Ok(1_u16);
+        let actual = Json::new().visit_u16(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly deserializes a zero u16 type.
+    #[test]
+    fn visit_u16_zero() {
+        let expected = Ok(0_u16);
+        let actual = Json::new().visit_u16(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon empty value.
+    #[test]
+    fn visit_u16_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("u16").into());
+        let actual = Json::new().visit_u16(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon a leading zero.
+    #[test]
+    fn visit_u16_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_u16(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon an invalid character.
+    #[test]
+    fn visit_u16_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_u16(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_u16_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_u16(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_u16_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_u16(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon overflow.
+    #[test]
+    fn visit_u16_overflow() {
+        let value = u16::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("u16").into());
+        let actual = Json::new().visit_u16(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u16 correctly errors upon negative values.
+    #[test]
+    fn visit_u16_negative() {
+        let expected = Err(Syntax::new(1, 1).unexpected("-").into());
+        let actual = Json::new().visit_u16(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly deserializes an u32 type.
+    #[test]
+    fn visit_u32_positive() {
+        let expected = Ok(1_u32);
+        let actual = Json::new().visit_u32(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly deserializes a zero u32 type.
+    #[test]
+    fn visit_u32_zero() {
+        let expected = Ok(0_u32);
+        let actual = Json::new().visit_u32(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon empty value.
+    #[test]
+    fn visit_u32_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("u32").into());
+        let actual = Json::new().visit_u32(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon a leading zero.
+    #[test]
+    fn visit_u32_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_u32(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon an invalid character.
+    #[test]
+    fn visit_u32_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_u32(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_u32_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_u32(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_u32_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_u32(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon overflow.
+    #[test]
+    fn visit_u32_overflow() {
+        let value = u32::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("u32").into());
+        let actual = Json::new().visit_u32(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u32 correctly errors upon negative values.
+    #[test]
+    fn visit_u32_negative() {
+        let expected = Err(Syntax::new(1, 1).unexpected("-").into());
+        let actual = Json::new().visit_u32(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly deserializes an u64 type.
+    #[test]
+    fn visit_u64_positive() {
+        let expected = Ok(1_u64);
+        let actual = Json::new().visit_u64(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly deserializes a zero u64 type.
+    #[test]
+    fn visit_u64_zero() {
+        let expected = Ok(0_u64);
+        let actual = Json::new().visit_u64(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon empty value.
+    #[test]
+    fn visit_u64_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("u64").into());
+        let actual = Json::new().visit_u64(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon a leading zero.
+    #[test]
+    fn visit_u64_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_u64(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon an invalid character.
+    #[test]
+    fn visit_u64_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_u64(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_u64_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_u64(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_u64_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_u64(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon overflow.
+    #[test]
+    fn visit_u64_overflow() {
+        let value = u64::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("u64").into());
+        let actual = Json::new().visit_u64(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u64 correctly errors upon negative values.
+    #[test]
+    fn visit_u64_negative() {
+        let expected = Err(Syntax::new(1, 1).unexpected("-").into());
+        let actual = Json::new().visit_u64(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly deserializes an u128 type.
+    #[test]
+    fn visit_u128_positive() {
+        let expected = Ok(1_u128);
+        let actual = Json::new().visit_u128(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly deserializes a zero u128 type.
+    #[test]
+    fn visit_u128_zero() {
+        let expected = Ok(0_u128);
+        let actual = Json::new().visit_u128(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon empty value.
+    #[test]
+    fn visit_u128_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("u128").into());
+        let actual = Json::new().visit_u128(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon a leading zero.
+    #[test]
+    fn visit_u128_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_u128(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon an invalid character.
+    #[test]
+    fn visit_u128_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_u128(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_u128_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_u128(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_u128_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_u128(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon overflow.
+    #[test]
+    fn visit_u128_overflow() {
+        let value = u128::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("u128").into());
+        let actual = Json::new().visit_u128(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_u128 correctly errors upon negative values.
+    #[test]
+    fn visit_u128_negative() {
+        let expected = Err(Syntax::new(1, 1).unexpected("-").into());
+        let actual = Json::new().visit_u128(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_unit correctly deserializes a unit type.
     #[test]
     fn visit_unit_correct() {
@@ -1070,6 +1732,106 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().deserialize(&"fail");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly deserializes an usize type.
+    #[test]
+    fn visit_usize_positive() {
+        let expected = Ok(1_usize);
+        let actual = Json::new().visit_usize(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly deserializes a zero usize type.
+    #[test]
+    fn visit_usize_zero() {
+        let expected = Ok(0_usize);
+        let actual = Json::new().visit_usize(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon empty value.
+    #[test]
+    fn visit_usize_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("usize").into());
+        let actual = Json::new().visit_usize(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon a leading zero.
+    #[test]
+    fn visit_usize_leading_zero() {
+        let expected = Err(Syntax::new(1, 1).unexpected("0").expected("1-9").into());
+        let actual = Json::new().visit_usize(&"01");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"01");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon an invalid character.
+    #[test]
+    fn visit_usize_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected(".").into());
+        let actual = Json::new().visit_usize(&"1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_usize_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_usize(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon an invalid newline.
+    #[test]
+    fn visit_usize_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_usize(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon overflow.
+    #[test]
+    fn visit_usize_overflow() {
+        let value = u128::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("usize").into());
+        let actual = Json::new().visit_usize(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_usize correctly errors upon negative values.
+    #[test]
+    fn visit_usize_negative() {
+        let expected = Err(Syntax::new(1, 1).unexpected("-").into());
+        let actual = Json::new().visit_usize(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
         assert_eq!(expected, actual);
     }
 }

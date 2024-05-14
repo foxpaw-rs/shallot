@@ -142,6 +142,96 @@ impl Deserialize for isize {
     }
 }
 
+impl Deserialize for u8 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_u8(input)
+    }
+}
+
+impl Deserialize for u16 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_u16(input)
+    }
+}
+
+impl Deserialize for u32 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_u32(input)
+    }
+}
+
+impl Deserialize for u64 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_u64(input)
+    }
+}
+
+impl Deserialize for u128 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_u128(input)
+    }
+}
+
+impl Deserialize for usize {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_usize(input)
+    }
+}
+
 /// Trait to implement on an item that conducts the deserialization, and
 /// defines how data is deserialized. Interaction with this should be done
 /// using the deserialize method, which in turn calls the required visit
@@ -164,45 +254,81 @@ pub trait Deserializer {
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_bool(&self, input: &Self::Input) -> Result<bool>;
 
-    /// Visit and deserialize a i8 type.
+    /// Visit and deserialize an i8 type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_i8(&self, input: &Self::Input) -> Result<i8>;
 
-    /// Visit and deserialize a i16 type.
+    /// Visit and deserialize an i16 type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_i16(&self, input: &Self::Input) -> Result<i16>;
 
-    /// Visit and deserialize a i32 type.
+    /// Visit and deserialize an i32 type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_i32(&self, input: &Self::Input) -> Result<i32>;
 
-    /// Visit and deserialize a i64 type.
+    /// Visit and deserialize an i64 type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_i64(&self, input: &Self::Input) -> Result<i64>;
 
-    /// Visit and deserialize a i128 type.
+    /// Visit and deserialize an i128 type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_i128(&self, input: &Self::Input) -> Result<i128>;
 
-    /// Visit and deserialize a isize type.
+    /// Visit and deserialize an isize type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_isize(&self, input: &Self::Input) -> Result<isize>;
+
+    /// Visit and deserialize a u8 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_u8(&self, input: &Self::Input) -> Result<u8>;
+
+    /// Visit and deserialize a u16 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_u16(&self, input: &Self::Input) -> Result<u16>;
+
+    /// Visit and deserialize a u32 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_u32(&self, input: &Self::Input) -> Result<u32>;
+
+    /// Visit and deserialize a u64 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_u64(&self, input: &Self::Input) -> Result<u64>;
+
+    /// Visit and deserialize a u128 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_u128(&self, input: &Self::Input) -> Result<u128>;
 
     /// Visit and deserialize a unit type.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_unit(&self, input: &Self::Input) -> Result<()>;
+
+    /// Visit and deserialize a usize type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_usize(&self, input: &Self::Input) -> Result<usize>;
 }
