@@ -112,6 +112,79 @@ impl Serialize for isize {
     }
 }
 
+impl Serialize for u8 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_u8(self)
+    }
+}
+
+impl Serialize for u16 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_u16(self)
+    }
+}
+
+impl Serialize for u32 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_u32(self)
+    }
+}
+
+impl Serialize for u64 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_u64(self)
+    }
+}
+
+impl Serialize for u128 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_u128(self)
+    }
+}
+
+impl Serialize for usize {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_usize(self)
+    }
+}
+
+
 /// Trait to implement on an item that conducts the serialization, and defines
 /// how data is serialized. Interaction with this should be done using the
 /// serialize method, which in turn calls the required visit methods to
@@ -146,6 +219,24 @@ pub trait Serializer {
     /// Visit and serialize an isize type.
     fn visit_isize(&self, input: &isize) -> Self::Output;
 
+    /// Visit and serialize an u8 type.
+    fn visit_u8(&self, input: &u8) -> Self::Output;
+
+    /// Visit and serialize an u16 type.
+    fn visit_u16(&self, input: &u16) -> Self::Output;
+
+    /// Visit and serialize an u32 type.
+    fn visit_u32(&self, input: &u32) -> Self::Output;
+
+    /// Visit and serialize an u64 type.
+    fn visit_u64(&self, input: &u64) -> Self::Output;
+
+    /// Visit and serialize an u128 type.
+    fn visit_u128(&self, input: &u128) -> Self::Output;
+
     /// Visit and serialize a unit type.
     fn visit_unit(&self) -> Self::Output;
+    
+    /// Visit and serialize an usize type.
+    fn visit_usize(&self, input: &usize) -> Self::Output;
 }
