@@ -184,7 +184,6 @@ impl Serialize for usize {
     }
 }
 
-
 /// Trait to implement on an item that conducts the serialization, and defines
 /// how data is serialized. Interaction with this should be done using the
 /// serialize method, which in turn calls the required visit methods to
@@ -236,7 +235,7 @@ pub trait Serializer {
 
     /// Visit and serialize a unit type.
     fn visit_unit(&self) -> Self::Output;
-    
+
     /// Visit and serialize an usize type.
     fn visit_usize(&self, input: &usize) -> Self::Output;
 }
