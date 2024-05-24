@@ -53,6 +53,33 @@ impl Serializer for Json {
         input.to_string()
     }
 
+    /// Visit and serialize a f32 type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&1_f32);
+    /// ```
+    fn visit_f32(&self, input: &f32) -> Self::Output {
+        input.to_string()
+    }
+
+    /// Visit and serialize a f64 type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&1_f64);
+    /// ```
+    fn visit_f64(&self, input: &f64) -> Self::Output {
+        input.to_string()
+    }
+
+
     /// Visit and serialize an i8 type.
     ///
     /// # Examples
@@ -257,7 +284,29 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_i8 correctly serializes a i8 type.
+    /// Test Json::visit_i8 correctly serializes an f32 type.
+    #[test]
+    fn visit_f32_correct() {
+        let expected = "1".to_owned();
+        let actual = Json::new().visit_f32(&1_f32);
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&1_f32);
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly serializes an f64 type.
+    #[test]
+    fn visit_f64_correct() {
+        let expected = "1".to_owned();
+        let actual = Json::new().visit_f64(&1_f64);
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&1_f64);
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_i8 correctly serializes an i8 type.
     #[test]
     fn visit_i8_correct() {
         let expected = "1".to_owned();
@@ -268,7 +317,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_i16 correctly serializes a i16 type.
+    /// Test Json::visit_i16 correctly serializes an i16 type.
     #[test]
     fn visit_i16_correct() {
         let expected = "1".to_owned();
@@ -279,7 +328,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_i32 correctly serializes a i32 type.
+    /// Test Json::visit_i32 correctly serializes an i32 type.
     #[test]
     fn visit_i32_correct() {
         let expected = "1".to_owned();
@@ -290,7 +339,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_i64 correctly serializes a i64 type.
+    /// Test Json::visit_i64 correctly serializes an i64 type.
     #[test]
     fn visit_i64_correct() {
         let expected = "1".to_owned();
@@ -301,7 +350,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_i128 correctly serializes a i128 type.
+    /// Test Json::visit_i128 correctly serializes an i128 type.
     #[test]
     fn visit_i128_correct() {
         let expected = "1".to_owned();
@@ -312,7 +361,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_isize correctly serializes a isize type.
+    /// Test Json::visit_isize correctly serializes an isize type.
     #[test]
     fn visit_isize_correct() {
         let expected = "1".to_owned();

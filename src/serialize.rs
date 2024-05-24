@@ -40,6 +40,30 @@ impl Serialize for bool {
     }
 }
 
+impl Serialize for f32 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_f32(self)
+    }
+}
+
+impl Serialize for f64 {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_f64(self)
+    }
+}
+
 impl Serialize for i8 {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
@@ -199,6 +223,12 @@ pub trait Serializer {
 
     /// Visit and serialize a bool type.
     fn visit_bool(&self, input: &bool) -> Self::Output;
+
+    /// Visit and serialize a f32 type.
+    fn visit_f32(&self, input: &f32) -> Self::Output;
+
+    /// Visit and serialize a f64 type.
+    fn visit_f64(&self, input: &f64) -> Self::Output;
 
     /// Visit and serialize an i8 type.
     fn visit_i8(&self, input: &i8) -> Self::Output;
