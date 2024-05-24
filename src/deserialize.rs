@@ -52,6 +52,36 @@ impl Deserialize for bool {
     }
 }
 
+impl Deserialize for f32 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_f32(input)
+    }
+}
+
+impl Deserialize for f64 {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_f64(input)
+    }
+}
+
 impl Deserialize for i8 {
     /// Accept a deserializer, allowing it to deserialize this item. Note that
     /// this is an internal method used to deserialize from the Deserializer and is
@@ -253,6 +283,18 @@ pub trait Deserializer {
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_bool(&self, input: &Self::Input) -> Result<bool>;
+
+    /// Visit and deserialize an f32 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_f32(&self, input: &Self::Input) -> Result<f32>;
+
+    /// Visit and deserialize an f64 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_f64(&self, input: &Self::Input) -> Result<f64>;
 
     /// Visit and deserialize an i8 type.
     ///

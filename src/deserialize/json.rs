@@ -38,6 +38,44 @@ impl<'a> Json<'a> {
         }
     }
 
+    /// Convert a float errors into library error types.
+    fn convert_float_error(&self, input: &<Self as Deserializer>::Input, kind: &str) -> Error {
+        let mut first = true;
+        let mut dot = false;
+        for c in input.chars() {
+            match c {
+                '0'..='9' => self.col.set(self.col.get() + 1),
+                '-' if first => self.col.set(self.col.get() + 1),
+                '.' if !dot => {
+                    self.col.set(self.col.get() + 1);
+                    dot = true;
+                }
+                c if c.is_whitespace() => {
+                    if c == '\r' || c == '\n' {
+                        self.row.set(self.row.get() + 1);
+                        self.col.set(1);
+                    }
+                    return Syntax::new(self.row.get(), self.col.get())
+                        .unexpected("whitespace")
+                        .into();
+                }
+                _ => {
+                    return Syntax::new(self.row.get(), self.col.get())
+                        .unexpected(&c.to_string())
+                        .into()
+                }
+            }
+
+            if first {
+                first = false;
+            }
+        }
+
+        Syntax::new(self.row.get(), self.col.get())
+            .expected(kind)
+            .into()
+    }
+
     /// Convert a integer errors into library error types.
     fn convert_int_error(
         &self,
@@ -129,7 +167,7 @@ impl<'a> Deserializer for Json<'a> {
         S: Deserialize,
     {
         let result = S::accept(self, input)?;
-        self.update(&input)?;
+        self.update(input)?;
         Ok(result)
     }
 
@@ -160,6 +198,66 @@ impl<'a> Deserializer for Json<'a> {
         }
     }
 
+    /// Visit and deserialize an f32 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: f32 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_f32(&self, input: &Self::Input) -> Result<f32> {
+        let result = input
+            .trim()
+            .parse::<f32>()
+            .map_err(|_| self.convert_float_error(input, "f32"))?;
+        if result.is_finite() {
+            Ok(result)
+        } else {
+            Err(Overflow::new(self.row.get(), self.col.get())
+                .kind("f32")
+                .into())
+        }
+    }
+
+    /// Visit and deserialize an f64 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: f64 = json.deserialize(&"1")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_f64(&self, input: &Self::Input) -> Result<f64> {
+        let result = input
+            .trim()
+            .parse::<f64>()
+            .map_err(|_| self.convert_float_error(input, "f64"))?;
+        if result.is_finite() {
+            Ok(result)
+        } else {
+            Err(Overflow::new(self.row.get(), self.col.get())
+                .kind("f64")
+                .into())
+        }
+    }
+
     /// Visit and deserialize an i8 type.
     ///
     /// # Errors
@@ -177,9 +275,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_i8(&self, input: &Self::Input) -> Result<i8> {
-        input.trim()
+        input
+            .trim()
             .parse::<i8>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "i8"))
+            .map_err(|err| self.convert_int_error(&err, input, "i8"))
     }
 
     /// Visit and deserialize an i16 type.
@@ -199,9 +298,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_i16(&self, input: &Self::Input) -> Result<i16> {
-        input.trim()
+        input
+            .trim()
             .parse::<i16>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "i16"))
+            .map_err(|err| self.convert_int_error(&err, input, "i16"))
     }
 
     /// Visit and deserialize an i32 type.
@@ -221,9 +321,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_i32(&self, input: &Self::Input) -> Result<i32> {
-        input.trim()
+        input
+            .trim()
             .parse::<i32>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "i32"))
+            .map_err(|err| self.convert_int_error(&err, input, "i32"))
     }
 
     /// Visit and deserialize an i64 type.
@@ -243,9 +344,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_i64(&self, input: &Self::Input) -> Result<i64> {
-        input.trim()
+        input
+            .trim()
             .parse::<i64>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "i64"))
+            .map_err(|err| self.convert_int_error(&err, input, "i64"))
     }
 
     /// Visit and deserialize an i128 type.
@@ -265,9 +367,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_i128(&self, input: &Self::Input) -> Result<i128> {
-        input.trim()
+        input
+            .trim()
             .parse::<i128>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "i128"))
+            .map_err(|err| self.convert_int_error(&err, input, "i128"))
     }
 
     /// Visit and deserialize an isize type.
@@ -287,9 +390,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_isize(&self, input: &Self::Input) -> Result<isize> {
-        input.trim()
+        input
+            .trim()
             .parse::<isize>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "isize"))
+            .map_err(|err| self.convert_int_error(&err, input, "isize"))
     }
 
     /// Visit and deserialize an u8 type.
@@ -309,9 +413,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_u8(&self, input: &Self::Input) -> Result<u8> {
-        input.trim()
+        input
+            .trim()
             .parse::<u8>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "u8"))
+            .map_err(|err| self.convert_int_error(&err, input, "u8"))
     }
 
     /// Visit and deserialize an u16 type.
@@ -331,9 +436,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_u16(&self, input: &Self::Input) -> Result<u16> {
-        input.trim()
+        input
+            .trim()
             .parse::<u16>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "u16"))
+            .map_err(|err| self.convert_int_error(&err, input, "u16"))
     }
 
     /// Visit and deserialize an u32 type.
@@ -353,9 +459,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_u32(&self, input: &Self::Input) -> Result<u32> {
-        input.trim()
+        input
+            .trim()
             .parse::<u32>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "u32"))
+            .map_err(|err| self.convert_int_error(&err, input, "u32"))
     }
 
     /// Visit and deserialize an u64 type.
@@ -375,9 +482,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_u64(&self, input: &Self::Input) -> Result<u64> {
-        input.trim()
+        input
+            .trim()
             .parse::<u64>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "u64"))
+            .map_err(|err| self.convert_int_error(&err, input, "u64"))
     }
 
     /// Visit and deserialize an u128 type.
@@ -397,9 +505,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_u128(&self, input: &Self::Input) -> Result<u128> {
-        input.trim()
+        input
+            .trim()
             .parse::<u128>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "u128"))
+            .map_err(|err| self.convert_int_error(&err, input, "u128"))
     }
 
     /// Visit and deserialize a unit type.
@@ -446,9 +555,10 @@ impl<'a> Deserializer for Json<'a> {
     /// }
     /// ```
     fn visit_usize(&self, input: &Self::Input) -> Result<usize> {
-        input.trim()
+        input
+            .trim()
             .parse::<usize>()
-            .map_err(|err: ParseIntError| self.convert_int_error(&err, input, "usize"))
+            .map_err(|err| self.convert_int_error(&err, input, "usize"))
     }
 }
 
@@ -512,6 +622,274 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().deserialize(&"fail");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly deserializes an f32 type.
+    #[test]
+    fn visit_f32_positive() {
+        let expected = Ok(1_f32);
+        let actual = Json::new().visit_f32(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly deserializes a negative f32 type.
+    #[test]
+    fn visit_f32_negative() {
+        let expected = Ok(-1_f32);
+        let actual = Json::new().visit_f32(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly deserializes a zero f32 type.
+    #[test]
+    fn visit_f32_zero() {
+        let expected = Ok(0_f32);
+        let actual = Json::new().visit_f32(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly deserializes an f32 with surrounding whitespace.
+    #[test]
+    fn visit_f32_surrounding_whitespace() {
+        let expected = Ok(0_f32);
+        let actual = Json::new().visit_f32(&" \n0  ");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&" \n0  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon empty value.
+    #[test]
+    fn visit_f32_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("f32").into());
+        let actual = Json::new().visit_f32(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon an invalid character.
+    #[test]
+    fn visit_f32_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected("|").into());
+        let actual = Json::new().visit_f32(&"1|2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1|2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon an invalid negative.
+    #[test]
+    fn visit_f32_invalid_negative() {
+        let expected = Err(Syntax::new(1, 3).unexpected("-").into());
+        let actual = Json::new().visit_f32(&"-1-2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1-2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon an invalid dot.
+    #[test]
+    fn visit_f32_invalid_dot() {
+        let expected = Err(Syntax::new(1, 3).unexpected(".").into());
+        let actual = Json::new().visit_f32(&".1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&".1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_f32_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_f32(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_f32_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_f32(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon overflow.
+    #[test]
+    fn visit_f32_overflow() {
+        let value = f32::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("f32").into());
+        let actual = Json::new().visit_f32(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f32 correctly errors upon negative overflow.
+    #[test]
+    fn visit_f32_negative_overflow() {
+        let value = f32::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("f32").into());
+        let actual = Json::new().visit_f32(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly deserializes an f64 type.
+    #[test]
+    fn visit_f64_positive() {
+        let expected = Ok(1_f64);
+        let actual = Json::new().visit_f64(&"1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly deserializes a negative f64 type.
+    #[test]
+    fn visit_f64_negative() {
+        let expected = Ok(-1_f64);
+        let actual = Json::new().visit_f64(&"-1");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly deserializes a zero f64 type.
+    #[test]
+    fn visit_f64_zero() {
+        let expected = Ok(0_f64);
+        let actual = Json::new().visit_f64(&"0");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"0");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly deserializes an f64 with surrounding whitespace.
+    #[test]
+    fn visit_f64_surrounding_whitespace() {
+        let expected = Ok(0_f64);
+        let actual = Json::new().visit_f64(&" \n0  ");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&" \n0  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon empty value.
+    #[test]
+    fn visit_f64_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("f64").into());
+        let actual = Json::new().visit_f64(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon an invalid character.
+    #[test]
+    fn visit_f64_invalid_character() {
+        let expected = Err(Syntax::new(1, 2).unexpected("|").into());
+        let actual = Json::new().visit_f64(&"1|2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1|2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon an invalid negative.
+    #[test]
+    fn visit_f64_invalid_negative() {
+        let expected = Err(Syntax::new(1, 3).unexpected("-").into());
+        let actual = Json::new().visit_f64(&"-1-2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"-1-2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon an invalid dot.
+    #[test]
+    fn visit_f64_invalid_dot() {
+        let expected = Err(Syntax::new(1, 3).unexpected(".").into());
+        let actual = Json::new().visit_f64(&".1.2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&".1.2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon an invalid whitespace.
+    #[test]
+    fn visit_f64_invalid_whitespace() {
+        let expected = Err(Syntax::new(1, 2).unexpected("whitespace").into());
+        let actual = Json::new().visit_f64(&"1 2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1 2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon an invalid newline.
+    #[test]
+    fn visit_f64_invalid_newline() {
+        let expected = Err(Syntax::new(2, 1).unexpected("whitespace").into());
+        let actual = Json::new().visit_f64(&"1\n2");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1\n2");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon overflow.
+    #[test]
+    fn visit_f64_overflow() {
+        let value = f64::MAX.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("f64").into());
+        let actual = Json::new().visit_f64(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_f64 correctly errors upon negative overflow.
+    #[test]
+    fn visit_f64_negative_overflow() {
+        let value = f64::MIN.to_string() + "0";
+        let expected = Err(Overflow::new(1, 1).kind("f64").into());
+        let actual = Json::new().visit_f64(&value.as_str());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&value.as_str());
         assert_eq!(expected, actual);
     }
 

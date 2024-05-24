@@ -79,7 +79,6 @@ impl Serializer for Json {
         input.to_string()
     }
 
-
     /// Visit and serialize an i8 type.
     ///
     /// # Examples
