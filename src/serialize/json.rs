@@ -19,6 +19,17 @@ impl Json {
     pub const fn new() -> Self {
         Self {}
     }
+
+    /// Encode and wrap a string ready as Json.
+    fn encode_string(input: &str) -> String {
+        let mut result = input
+            .replace('\\', "\\\\")
+            .replace('"', "\\\"");
+
+        result.insert(0, '"');
+        result.push('"');
+        result
+    }
 }
 
 impl Serializer for Json {
@@ -35,7 +46,7 @@ impl Serializer for Json {
     /// ```
     fn serialize<S>(&self, input: &S) -> Self::Output
     where
-        S: Serialize,
+        S: Serialize + ?Sized,
     {
         input.accept(self)
     }
@@ -53,7 +64,20 @@ impl Serializer for Json {
         input.to_string()
     }
 
-    /// Visit and serialize a f32 type.
+    /// Visit and serialize a char type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&'a');
+    /// ```
+    fn visit_char(&self, input: &char) -> Self::Output {
+        Self::encode_string(input.encode_utf8(& mut[0_u8; 4]))
+    }
+
+    /// Visit and serialize an f32 type.
     ///
     /// # Examples
     /// ```rust
@@ -66,7 +90,7 @@ impl Serializer for Json {
         input.to_string()
     }
 
-    /// Visit and serialize a f64 type.
+    /// Visit and serialize an f64 type.
     ///
     /// # Examples
     /// ```rust
@@ -155,6 +179,32 @@ impl Serializer for Json {
     /// ```
     fn visit_isize(&self, input: &isize) -> Self::Output {
         input.to_string()
+    }
+
+    /// Visit and serialize a str type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&'a');
+    /// ```
+    fn visit_str(&self, input: &str) -> Self::Output {
+        Self::encode_string(input)
+    }
+
+    /// Visit and serialize a String type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&'a');
+    /// ```
+    fn visit_string(&self, input: &String) -> Self::Output {
+        Self::encode_string(input.as_str())
     }
 
     /// Visit and serialize an u8 type.
@@ -283,6 +333,39 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    /// Test Json::visit_char correctly serializes a char type.
+    #[test]
+    fn visit_char_correct() {
+        let expected = "\"a\"".to_owned();
+        let actual = Json::new().visit_char(&'a');
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&'a');
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly serializes an escape backslash.
+    #[test]
+    fn visit_char_escape_backslash() {
+        let expected = "\"\\\\\"".to_owned();
+        let actual = Json::new().visit_char(&'\\');
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&'\\');
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly serializes an escape quote.
+    #[test]
+    fn visit_char_escape_quote() {
+        let expected = "\"\\\"\"".to_owned();
+        let actual = Json::new().visit_char(&'"');
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&'"');
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_i8 correctly serializes an f32 type.
     #[test]
     fn visit_f32_correct() {
@@ -368,6 +451,72 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().serialize(&1_isize);
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_str correctly serializes a str type.
+    #[test]
+    fn visit_str_correct() {
+        let expected = "\"a\"".to_owned();
+        let actual = Json::new().visit_str("a");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize("a");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_str correctly serializes an escape backslash.
+    #[test]
+    fn visit_str_escape_backslash() {
+        let expected = "\"\\\\\"".to_owned();
+        let actual = Json::new().visit_str("\\");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize("\\");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_str correctly serializes an escape quote.
+    #[test]
+    fn visit_str_escape_quote() {
+        let expected = "\"\\\"\"".to_owned();
+        let actual = Json::new().visit_str("\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize("\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly serializes a String type.
+    #[test]
+    fn visit_string_correct() {
+        let expected = "\"a\"".to_owned();
+        let actual = Json::new().visit_string(&"a".to_owned());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&"a".to_owned());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly serializes an escape backslash.
+    #[test]
+    fn visit_string_escape_backslash() {
+        let expected = "\"\\\\\"".to_owned();
+        let actual = Json::new().visit_string(&"\\".to_owned());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&"\\".to_owned());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly serializes an escape quote.
+    #[test]
+    fn visit_string_escape_quote() {
+        let expected = "\"\\\"\"".to_owned();
+        let actual = Json::new().visit_string(&"\"".to_owned());
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&"\"".to_owned());
         assert_eq!(expected, actual);
     }
 

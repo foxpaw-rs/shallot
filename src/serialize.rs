@@ -40,6 +40,18 @@ impl Serialize for bool {
     }
 }
 
+impl Serialize for char {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_char(self)
+    }
+}
+
 impl Serialize for f32 {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
@@ -136,6 +148,30 @@ impl Serialize for isize {
     }
 }
 
+impl Serialize for str {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_str(self)
+    }
+}
+
+impl Serialize for String {
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_string(self)
+    }
+}
+
 impl Serialize for u8 {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
@@ -219,10 +255,13 @@ pub trait Serializer {
     /// Serialize the input into the required output type.
     fn serialize<S>(&self, input: &S) -> Self::Output
     where
-        S: Serialize;
+        S: Serialize + ?Sized;
 
     /// Visit and serialize a bool type.
     fn visit_bool(&self, input: &bool) -> Self::Output;
+
+    /// Visit and serialize a char type.
+    fn visit_char(&self, input: &char) -> Self::Output;
 
     /// Visit and serialize a f32 type.
     fn visit_f32(&self, input: &f32) -> Self::Output;
@@ -247,6 +286,12 @@ pub trait Serializer {
 
     /// Visit and serialize an isize type.
     fn visit_isize(&self, input: &isize) -> Self::Output;
+
+    /// Visit and serialize a str type.
+    fn visit_str(&self, input: &str) -> Self::Output;
+
+    /// Visit and serialize a String type.
+    fn visit_string(&self, input: &String) -> Self::Output;
 
     /// Visit and serialize an u8 type.
     fn visit_u8(&self, input: &u8) -> Self::Output;
