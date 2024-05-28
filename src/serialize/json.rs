@@ -22,13 +22,26 @@ impl Json {
 
     /// Encode and wrap a string ready as Json.
     fn encode_string(input: &str) -> String {
-        let mut result = input
-            .replace('\\', "\\\\")
-            .replace('"', "\\\"");
+        let mut result = input.replace('\\', "\\\\").replace('"', "\\\"");
 
         result.insert(0, '"');
         result.push('"');
         result
+    }
+}
+
+impl Default for Json {
+    /// Create a new default Json serializer.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::serialize::Json;
+    ///
+    /// let json = Json::default();
+    /// ```
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -74,7 +87,7 @@ impl Serializer for Json {
     /// let output = json.serialize(&'a');
     /// ```
     fn visit_char(&self, input: &char) -> Self::Output {
-        Self::encode_string(input.encode_utf8(& mut[0_u8; 4]))
+        Self::encode_string(input.encode_utf8(&mut [0_u8; 4]))
     }
 
     /// Visit and serialize an f32 type.

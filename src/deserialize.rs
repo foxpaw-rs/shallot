@@ -52,6 +52,21 @@ impl Deserialize for bool {
     }
 }
 
+impl Deserialize for char {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_char(input)
+    }
+}
+
 impl Deserialize for f32 {
     /// Accept a deserializer, allowing it to deserialize this item. Note that
     /// this is an internal method used to deserialize from the Deserializer and is
@@ -172,6 +187,21 @@ impl Deserialize for isize {
     }
 }
 
+impl Deserialize for String {
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_string(input)
+    }
+}
+
 impl Deserialize for u8 {
     /// Accept a deserializer, allowing it to deserialize this item. Note that
     /// this is an internal method used to deserialize from the Deserializer and is
@@ -284,6 +314,12 @@ pub trait Deserializer {
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_bool(&self, input: &Self::Input) -> Result<bool>;
 
+    /// Visit and deserialize a char type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_char(&self, input: &Self::Input) -> Result<char>;
+
     /// Visit and deserialize an f32 type.
     ///
     /// # Errors
@@ -331,6 +367,12 @@ pub trait Deserializer {
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_isize(&self, input: &Self::Input) -> Result<isize>;
+
+    /// Visit and deserialize a String type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_string(&self, input: &Self::Input) -> Result<String>;
 
     /// Visit and deserialize a u8 type.
     ///

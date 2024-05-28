@@ -124,6 +124,36 @@ impl<'a> Json<'a> {
         }
     }
 
+    /// Decode a string, taking into consideration escaped characters.
+    fn decode_string(&self, input: &<Self as Deserializer>::Input, kind: &str) -> Result<String> {
+        let stripped = input.strip_prefix('"').ok_or_else(|| {
+            let e: Error = match input.chars().next() {
+                Some(f) => Syntax::new(self.row.get(), self.col.get())
+                    .unexpected(f.encode_utf8(&mut [0_u8; 4]))
+                    .expected("\"")
+                    .into(),
+                None => Syntax::new(self.row.get(), self.col.get())
+                    .expected(kind)
+                    .into(),
+            };
+            e
+        })?;
+
+        let stripped = stripped.strip_suffix('"').ok_or_else(|| {
+            let e: Error = match stripped.chars().last() {
+                Some(_) => Syntax::new(self.row.get(), self.col.get() + input.len())
+                    .expected("\"")
+                    .into(),
+                None => Syntax::new(self.row.get(), self.col.get())
+                    .expected(kind)
+                    .into(),
+            };
+            e
+        })?;
+
+        Ok(stripped.replace("\\\"", "\"").replace("\\\\", "\\"))
+    }
+
     /// Update the row and col values.
     fn update(&self, input: &<Self as Deserializer>::Input) -> Result<&Self> {
         if input.contains('\n') {
@@ -139,6 +169,21 @@ impl<'a> Json<'a> {
             self.col.set(self.col.get() + input.len());
         }
         Ok(self)
+    }
+}
+
+impl<'a> Default for Json<'a> {
+    /// Create a new default Json deserializer.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::Json;
+    ///
+    /// let json = Json::default();
+    /// ```
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -195,6 +240,37 @@ impl<'a> Deserializer for Json<'a> {
                 .unexpected(input)
                 .expected("boolean")
                 .into()),
+        }
+    }
+
+    /// Visit and deserialize a char type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: char = json.deserialize(&"\"a\"")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_char(&self, input: &Self::Input) -> Result<char> {
+        let result = self.decode_string(&input.trim(), "char")?;
+        if result.len() > 1 {
+            Err(Overflow::new(self.row.get(), self.col.get() + 2)
+                .kind("char")
+                .into())
+        } else {
+            result.chars().next().ok_or_else(|| {
+                Syntax::new(self.row.get(), self.col.get() + 1)
+                    .unexpected("\"")
+                    .into()
+            })
         }
     }
 
@@ -394,6 +470,26 @@ impl<'a> Deserializer for Json<'a> {
             .trim()
             .parse::<isize>()
             .map_err(|err| self.convert_int_error(&err, input, "isize"))
+    }
+
+    /// Visit and deserialize a String type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: String = json.deserialize(&"\"abc\"")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_string(&self, input: &Self::Input) -> Result<String> {
+        self.decode_string(&input.trim(), "string")
     }
 
     /// Visit and deserialize an u8 type.
@@ -622,6 +718,127 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().deserialize(&"fail");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly deserializes a char type.
+    #[test]
+    fn visit_char_correct() {
+        let expected = Ok('a');
+        let actual = Json::new().visit_char(&"\"a\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"a\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly deserializes a escaped backslash.
+    #[test]
+    fn visit_char_escape_backslash() {
+        let expected = Ok('\\');
+        let actual = Json::new().visit_char(&"\"\\\\\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"\\\\\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly deserializes a escaped quote.
+    #[test]
+    fn visit_char_escape_quote() {
+        let expected = Ok('\"');
+        let actual = Json::new().visit_char(&"\"\\\"\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"\\\"\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly deserializes with whitespace.
+    #[test]
+    fn visit_char_whitespace() {
+        let expected = Ok('a');
+        let actual = Json::new().visit_char(&"  \n\"a\"  ");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"  \n\"a\"  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors when empty.
+    #[test]
+    fn visit_char_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("char").into());
+        let actual = Json::new().visit_char(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors when provided nothing.
+    #[test]
+    fn visit_char_nothing() {
+        let expected = Err(Syntax::new(1, 2).unexpected("\"").into());
+        let actual = Json::new().visit_char(&"\"\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors on overflow.
+    #[test]
+    fn visit_char_overflow() {
+        let expected = Err(Overflow::new(1, 3).kind("char").into());
+        let actual = Json::new().visit_char(&"\"ab\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"ab\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors on missing leading quote.
+    #[test]
+    fn visit_char_missing_leading_quote() {
+        let expected = Err(Syntax::new(1, 1).unexpected("a").expected("\"").into());
+        let actual = Json::new().visit_char(&"a\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"a\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors on missing trailing quote.
+    #[test]
+    fn visit_char_missing_trailing_quote() {
+        let expected = Err(Syntax::new(1, 3).expected("\"").into());
+        let actual = Json::new().visit_char(&"\"a");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"a");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors on replaced trailing quote.
+    #[test]
+    fn visit_char_replaced_trailing_quote() {
+        let expected = Err(Syntax::new(1, 4).expected("\"").into());
+        let actual = Json::new().visit_char(&"\"ab");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"ab");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors on one quote.
+    #[test]
+    fn visit_char_one_quote() {
+        let expected = Err(Syntax::new(1, 1).expected("char").into());
+        let actual = Json::new().visit_char(&"\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"");
         assert_eq!(expected, actual);
     }
 
@@ -1628,6 +1845,105 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().deserialize(&value.as_str());
+        assert_eq!(expected, actual);
+    }
+
+    /// Tes Json::visit_string correctly deserializes a String type.
+    #[test]
+    fn visit_string_correct() {
+        let expected = Ok("a".to_string());
+        let actual = Json::new().visit_string(&"\"a\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"a\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly deserializes a escaped backslash.
+    #[test]
+    fn visit_string_escape_backslash() {
+        let expected = Ok("\\".to_string());
+        let actual = Json::new().visit_string(&"\"\\\\\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"\\\\\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly deserializes a escaped quote.
+    #[test]
+    fn visit_string_escape_quote() {
+        let expected = Ok("\"".to_string());
+        let actual = Json::new().visit_string(&"\"\\\"\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"\\\"\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly handles an empty string.
+    #[test]
+    fn visit_string_nothing() {
+        let expected = Ok(String::new());
+        let actual = Json::new().visit_string(&"\"\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly deserializes with whitespace.
+    #[test]
+    fn visit_string_whitespace() {
+        let expected = Ok("a".to_string());
+        let actual = Json::new().visit_string(&"  \n\"a\"  ");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"  \n\"a\"  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly errors when empty.
+    #[test]
+    fn visit_string_empty() {
+        let expected = Err(Syntax::new(1, 1).expected("string").into());
+        let actual = Json::new().visit_string(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly errors on missing leading quote.
+    #[test]
+    fn visit_string_missing_leading_quote() {
+        let expected = Err(Syntax::new(1, 1).unexpected("a").expected("\"").into());
+        let actual = Json::new().visit_string(&"a\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"a\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly errors on missing trailing quote.
+    #[test]
+    fn visit_string_missing_trailing_quote() {
+        let expected = Err(Syntax::new(1, 3).expected("\"").into());
+        let actual = Json::new().visit_string(&"\"a");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"a");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_string correctly errors on one quote.
+    #[test]
+    fn visit_string_one_quote() {
+        let expected = Err(Syntax::new(1, 1).expected("string").into());
+        let actual = Json::new().visit_string(&"\"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"\"");
         assert_eq!(expected, actual);
     }
 

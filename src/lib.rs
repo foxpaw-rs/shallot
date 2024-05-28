@@ -8,7 +8,10 @@
 //! * u8, u16, u32, u64, u128, usize
 //! * f32, f64
 //! * char
-//! * &str, String
+//! * &str [^1], String
+//!
+//! [^1]: Serialization of &str slices only supported, deserialization not
+//! supported.
 
 #![deny(
     clippy::all,

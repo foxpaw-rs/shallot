@@ -291,6 +291,7 @@ pub trait Serializer {
     fn visit_str(&self, input: &str) -> Self::Output;
 
     /// Visit and serialize a String type.
+    #[allow(clippy::ptr_arg)]
     fn visit_string(&self, input: &String) -> Self::Output;
 
     /// Visit and serialize an u8 type.
