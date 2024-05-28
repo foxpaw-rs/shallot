@@ -233,7 +233,7 @@ impl Serializer for Json {
     where
         A: Serialize,
     {
-        format!("({})", self.serialize(&input.0))
+        format!("[{}]", self.serialize(&input.0))
     }
 
     /// Visit and serialize a tuple type of size 2.
@@ -251,7 +251,7 @@ impl Serializer for Json {
         B: Serialize,
     {
         format!(
-            "({}, {})",
+            "[{}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1)
         )
@@ -273,7 +273,7 @@ impl Serializer for Json {
         C: Serialize,
     {
         format!(
-            "({}, {}, {})",
+            "[{}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2)
@@ -297,7 +297,7 @@ impl Serializer for Json {
         D: Serialize,
     {
         format!(
-            "({}, {}, {}, {})",
+            "[{}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -323,7 +323,7 @@ impl Serializer for Json {
         E: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -351,7 +351,7 @@ impl Serializer for Json {
         F: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -381,7 +381,7 @@ impl Serializer for Json {
         G: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -416,7 +416,7 @@ impl Serializer for Json {
         H: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -453,7 +453,7 @@ impl Serializer for Json {
         I: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -492,7 +492,7 @@ impl Serializer for Json {
         J: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -533,7 +533,7 @@ impl Serializer for Json {
         K: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -576,7 +576,7 @@ impl Serializer for Json {
         L: Serialize,
     {
         format!(
-            "({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+            "[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]",
             self.serialize(&input.0),
             self.serialize(&input.1),
             self.serialize(&input.2),
@@ -908,7 +908,7 @@ mod tests {
     /// Test Json::visit_tuple_1 correctly serializes a tuple type of size 1.
     #[test]
     fn visit_tuple_1_correct() {
-        let expected = "(1)".to_owned();
+        let expected = "[1]".to_owned();
         let actual = Json::new().visit_tuple_1(&(1_u8,));
         assert_eq!(expected, actual);
 
@@ -919,7 +919,7 @@ mod tests {
     /// Test Json::visit_tuple_2 correctly serializes a tuple type of size 2.
     #[test]
     fn visit_tuple_2_correct() {
-        let expected = "(1, 2)".to_owned();
+        let expected = "[1, 2]".to_owned();
         let actual = Json::new().visit_tuple_2(&(1_u8, 2_u8));
         assert_eq!(expected, actual);
 
@@ -930,7 +930,7 @@ mod tests {
     /// Test Json::visit_tuple_3 correctly serializes a tuple type of size 3.
     #[test]
     fn visit_tuple_3_correct() {
-        let expected = "(1, 2, 3)".to_owned();
+        let expected = "[1, 2, 3]".to_owned();
         let actual = Json::new().visit_tuple_3(&(1_u8, 2_u8, 3_u8));
         assert_eq!(expected, actual);
 
@@ -941,7 +941,7 @@ mod tests {
     /// Test Json::visit_tuple_4 correctly serializes a tuple type of size 4.
     #[test]
     fn visit_tuple_4_correct() {
-        let expected = "(1, 2, 3, 4)".to_owned();
+        let expected = "[1, 2, 3, 4]".to_owned();
         let actual = Json::new().visit_tuple_4(&(1_u8, 2_u8, 3_u8, 4_u8));
         assert_eq!(expected, actual);
 
@@ -952,7 +952,7 @@ mod tests {
     /// Test Json::visit_tuple_5 correctly serializes a tuple type of size 5.
     #[test]
     fn visit_tuple_5_correct() {
-        let expected = "(1, 2, 3, 4, 5)".to_owned();
+        let expected = "[1, 2, 3, 4, 5]".to_owned();
         let actual = Json::new().visit_tuple_5(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8));
         assert_eq!(expected, actual);
 
@@ -963,7 +963,7 @@ mod tests {
     /// Test Json::visit_tuple_6 correctly serializes a tuple type of size 6.
     #[test]
     fn visit_tuple_6_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6]".to_owned();
         let actual = Json::new().visit_tuple_6(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
         assert_eq!(expected, actual);
 
@@ -974,7 +974,7 @@ mod tests {
     /// Test Json::visit_tuple_7 correctly serializes a tuple type of size 7.
     #[test]
     fn visit_tuple_7_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6, 7)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6, 7]".to_owned();
         let actual = Json::new().visit_tuple_7(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
         assert_eq!(expected, actual);
 
@@ -985,7 +985,7 @@ mod tests {
     /// Test Json::visit_tuple_8 correctly serializes a tuple type of size 8.
     #[test]
     fn visit_tuple_8_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6, 7, 8)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6, 7, 8]".to_owned();
         let actual = Json::new().visit_tuple_8(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
         assert_eq!(expected, actual);
 
@@ -996,7 +996,7 @@ mod tests {
     /// Test Json::visit_tuple_9 correctly serializes a tuple type of size 9.
     #[test]
     fn visit_tuple_9_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6, 7, 8, 9]".to_owned();
         let actual =
             Json::new().visit_tuple_9(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
         assert_eq!(expected, actual);
@@ -1008,7 +1008,7 @@ mod tests {
     /// Test Json::visit_tuple_10 correctly serializes a tuple type of size 10.
     #[test]
     fn visit_tuple_10_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]".to_owned();
         let actual = Json::new()
             .visit_tuple_10(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
         assert_eq!(expected, actual);
@@ -1021,7 +1021,7 @@ mod tests {
     /// Test Json::visit_tuple_11 correctly serializes a tuple type of size 11.
     #[test]
     fn visit_tuple_11_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]".to_owned();
         let actual = Json::new().visit_tuple_11(&(
             1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
         ));
@@ -1036,7 +1036,7 @@ mod tests {
     /// Test Json::visit_tuple_12 correctly serializes a tuple type of size 12.
     #[test]
     fn visit_tuple_12_correct() {
-        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)".to_owned();
+        let expected = "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]".to_owned();
         let actual = Json::new().visit_tuple_12(&(
             1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
         ));
