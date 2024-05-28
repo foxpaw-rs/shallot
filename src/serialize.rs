@@ -43,6 +43,237 @@ where
     }
 }
 
+impl<A, B> Serialize for (A, B)
+where
+    A: Serialize,
+    B: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_2(self)
+    }
+}
+
+impl<A, B, C> Serialize for (A, B, C)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_3(self)
+    }
+}
+
+impl<A, B, C, D> Serialize for (A, B, C, D)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_4(self)
+    }
+}
+
+impl<A, B, C, D, E> Serialize for (A, B, C, D, E)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_5(self)
+    }
+}
+
+impl<A, B, C, D, E, F> Serialize for (A, B, C, D, E, F)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_6(self)
+    }
+}
+
+impl<A, B, C, D, E, F, G> Serialize for (A, B, C, D, E, F, G)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+    G: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_7(self)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H> Serialize for (A, B, C, D, E, F, G, H)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+    G: Serialize,
+    H: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_8(self)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I> Serialize for (A, B, C, D, E, F, G, H, I)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+    G: Serialize,
+    H: Serialize,
+    I: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_9(self)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I, J> Serialize for (A, B, C, D, E, F, G, H, I, J)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+    G: Serialize,
+    H: Serialize,
+    I: Serialize,
+    J: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_10(self)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I, J, K> Serialize for (A, B, C, D, E, F, G, H, I, J, K)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+    G: Serialize,
+    H: Serialize,
+    I: Serialize,
+    J: Serialize,
+    K: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_11(self)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I, J, K, L> Serialize for (A, B, C, D, E, F, G, H, I, J, K, L)
+where
+    A: Serialize,
+    B: Serialize,
+    C: Serialize,
+    D: Serialize,
+    E: Serialize,
+    F: Serialize,
+    G: Serialize,
+    H: Serialize,
+    I: Serialize,
+    J: Serialize,
+    K: Serialize,
+    L: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_12(self)
+    }
+}
+
 impl Serialize for bool {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
@@ -313,6 +544,143 @@ pub trait Serializer {
     fn visit_tuple_1<A>(&self, input: &(A,)) -> Self::Output
     where
         A: Serialize;
+
+    /// Visit and serialize a tuple type of size 2.
+    fn visit_tuple_2<A, B>(&self, input: &(A, B)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize;
+
+    /// Visit and serialize a tuple type of size 3.
+    fn visit_tuple_3<A, B, C>(&self, input: &(A, B, C)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize;
+
+    /// Visit and serialize a tuple type of size 4.
+    fn visit_tuple_4<A, B, C, D>(&self, input: &(A, B, C, D)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize;
+
+    /// Visit and serialize a tuple type of size 5.
+    fn visit_tuple_5<A, B, C, D, E>(&self, input: &(A, B, C, D, E)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize;
+
+    /// Visit and serialize a tuple type of size 6.
+    fn visit_tuple_6<A, B, C, D, E, F>(&self, input: &(A, B, C, D, E, F)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize;
+
+    /// Visit and serialize a tuple type of size 7.
+    fn visit_tuple_7<A, B, C, D, E, F, G>(&self, input: &(A, B, C, D, E, F, G)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize;
+
+    /// Visit and serialize a tuple type of size 8.
+    fn visit_tuple_8<A, B, C, D, E, F, G, H>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize;
+
+    /// Visit and serialize a tuple type of size 9.
+    fn visit_tuple_9<A, B, C, D, E, F, G, H, I>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize;
+
+    /// Visit and serialize a tuple type of size 10.
+    fn visit_tuple_10<A, B, C, D, E, F, G, H, I, J>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I, J),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+        J: Serialize;
+
+    /// Visit and serialize a tuple type of size 11.
+    fn visit_tuple_11<A, B, C, D, E, F, G, H, I, J, K>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I, J, K),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+        J: Serialize,
+        K: Serialize;
+
+    /// Visit and serialize a tuple type of size 12.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_12<A, B, C, D, E, F, G, H, I, J, K, L>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I, J, K, L),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+        J: Serialize,
+        K: Serialize,
+        L: Serialize;
 
     /// Visit and serialize an u8 type.
     fn visit_u8(&self, input: &u8) -> Self::Output;

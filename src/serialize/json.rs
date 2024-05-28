@@ -236,6 +236,362 @@ impl Serializer for Json {
         format!("({})", self.serialize(&input.0))
     }
 
+    /// Visit and serialize a tuple type of size 2.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2));
+    /// ```
+    fn visit_tuple_2<A, B>(&self, input: &(A, B)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+    {
+        format!(
+            "({}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 3.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3));
+    /// ```
+    fn visit_tuple_3<A, B, C>(&self, input: &(A, B, C)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+    {
+        format!(
+            "({}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 4.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4));
+    /// ```
+    fn visit_tuple_4<A, B, C, D>(&self, input: &(A, B, C, D)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 5.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5));
+    /// ```
+    fn visit_tuple_5<A, B, C, D, E>(&self, input: &(A, B, C, D, E)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 6.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6));
+    /// ```
+    fn visit_tuple_6<A, B, C, D, E, F>(&self, input: &(A, B, C, D, E, F)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 7.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6, 7));
+    /// ```
+    fn visit_tuple_7<A, B, C, D, E, F, G>(&self, input: &(A, B, C, D, E, F, G)) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5),
+            self.serialize(&input.6)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 8.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6, 7, 8));
+    /// ```
+    fn visit_tuple_8<A, B, C, D, E, F, G, H>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5),
+            self.serialize(&input.6),
+            self.serialize(&input.7)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 9.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6, 7, 8, 9));
+    /// ```
+    fn visit_tuple_9<A, B, C, D, E, F, G, H, I>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5),
+            self.serialize(&input.6),
+            self.serialize(&input.7),
+            self.serialize(&input.8)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 10.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+    /// ```
+    fn visit_tuple_10<A, B, C, D, E, F, G, H, I, J>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I, J),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+        J: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5),
+            self.serialize(&input.6),
+            self.serialize(&input.7),
+            self.serialize(&input.8),
+            self.serialize(&input.9)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 11.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
+    /// ```
+    fn visit_tuple_11<A, B, C, D, E, F, G, H, I, J, K>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I, J, K),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+        J: Serialize,
+        K: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5),
+            self.serialize(&input.6),
+            self.serialize(&input.7),
+            self.serialize(&input.8),
+            self.serialize(&input.9),
+            self.serialize(&input.10)
+        )
+    }
+
+    /// Visit and serialize a tuple type of size 12.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12));
+    /// ```
+    fn visit_tuple_12<A, B, C, D, E, F, G, H, I, J, K, L>(
+        &self,
+        input: &(A, B, C, D, E, F, G, H, I, J, K, L),
+    ) -> Self::Output
+    where
+        A: Serialize,
+        B: Serialize,
+        C: Serialize,
+        D: Serialize,
+        E: Serialize,
+        F: Serialize,
+        G: Serialize,
+        H: Serialize,
+        I: Serialize,
+        J: Serialize,
+        K: Serialize,
+        L: Serialize,
+    {
+        format!(
+            "({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+            self.serialize(&input.0),
+            self.serialize(&input.1),
+            self.serialize(&input.2),
+            self.serialize(&input.3),
+            self.serialize(&input.4),
+            self.serialize(&input.5),
+            self.serialize(&input.6),
+            self.serialize(&input.7),
+            self.serialize(&input.8),
+            self.serialize(&input.9),
+            self.serialize(&input.10),
+            self.serialize(&input.11)
+        )
+    }
+
     /// Visit and serialize an u8 type.
     ///
     /// # Examples
@@ -557,6 +913,138 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().serialize(&(1_u8,));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly serializes a tuple type of size 2.
+    #[test]
+    fn visit_tuple_2_correct() {
+        let expected = "(1, 2)".to_owned();
+        let actual = Json::new().visit_tuple_2(&(1_u8, 2_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly serializes a tuple type of size 3.
+    #[test]
+    fn visit_tuple_3_correct() {
+        let expected = "(1, 2, 3)".to_owned();
+        let actual = Json::new().visit_tuple_3(&(1_u8, 2_u8, 3_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly serializes a tuple type of size 4.
+    #[test]
+    fn visit_tuple_4_correct() {
+        let expected = "(1, 2, 3, 4)".to_owned();
+        let actual = Json::new().visit_tuple_4(&(1_u8, 2_u8, 3_u8, 4_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly serializes a tuple type of size 5.
+    #[test]
+    fn visit_tuple_5_correct() {
+        let expected = "(1, 2, 3, 4, 5)".to_owned();
+        let actual = Json::new().visit_tuple_5(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly serializes a tuple type of size 6.
+    #[test]
+    fn visit_tuple_6_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6)".to_owned();
+        let actual = Json::new().visit_tuple_6(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly serializes a tuple type of size 7.
+    #[test]
+    fn visit_tuple_7_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6, 7)".to_owned();
+        let actual = Json::new().visit_tuple_7(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly serializes a tuple type of size 8.
+    #[test]
+    fn visit_tuple_8_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6, 7, 8)".to_owned();
+        let actual = Json::new().visit_tuple_8(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly serializes a tuple type of size 9.
+    #[test]
+    fn visit_tuple_9_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9)".to_owned();
+        let actual =
+            Json::new().visit_tuple_9(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly serializes a tuple type of size 10.
+    #[test]
+    fn visit_tuple_10_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)".to_owned();
+        let actual = Json::new()
+            .visit_tuple_10(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
+        assert_eq!(expected, actual);
+
+        let actual =
+            Json::new().serialize(&(1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly serializes a tuple type of size 11.
+    #[test]
+    fn visit_tuple_11_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)".to_owned();
+        let actual = Json::new().visit_tuple_11(&(
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
+        ));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
+        ));
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly serializes a tuple type of size 12.
+    #[test]
+    fn visit_tuple_12_correct() {
+        let expected = "(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)".to_owned();
+        let actual = Json::new().visit_tuple_12(&(
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
+        ));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
+        ));
         assert_eq!(expected, actual);
     }
 
