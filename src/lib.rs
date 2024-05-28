@@ -12,6 +12,10 @@
 //!
 //! [^1]: Serialization of &str slices only supported, deserialization not
 //! supported.
+//!
+//! ## Compound Types
+//! * (T), tuples to size 12
+//! * [T; n]
 
 #![deny(
     clippy::all,

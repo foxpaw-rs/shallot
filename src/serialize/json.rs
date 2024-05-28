@@ -220,6 +220,22 @@ impl Serializer for Json {
         Self::encode_string(input.as_str())
     }
 
+    /// Visit and serialize a tuple type of size 1.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&(1,));
+    /// ```
+    fn visit_tuple_1<A>(&self, input: &(A,)) -> Self::Output
+    where
+        A: Serialize,
+    {
+        format!("({})", self.serialize(&input.0))
+    }
+
     /// Visit and serialize an u8 type.
     ///
     /// # Examples
@@ -530,6 +546,17 @@ mod tests {
         assert_eq!(expected, actual);
 
         let actual = Json::new().serialize(&"\"".to_owned());
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly serializes a tuple type of size 1.
+    #[test]
+    fn visit_tuple_1_correct() {
+        let expected = "(1)".to_owned();
+        let actual = Json::new().visit_tuple_1(&(1_u8,));
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&(1_u8,));
         assert_eq!(expected, actual);
     }
 

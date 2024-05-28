@@ -28,6 +28,21 @@ impl Serialize for () {
     }
 }
 
+impl<A> Serialize for (A,)
+where
+    A: Serialize,
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_tuple_1(self)
+    }
+}
+
 impl Serialize for bool {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
@@ -293,6 +308,11 @@ pub trait Serializer {
     /// Visit and serialize a String type.
     #[allow(clippy::ptr_arg)]
     fn visit_string(&self, input: &String) -> Self::Output;
+
+    /// Visit and serialize a tuple type of size 1.
+    fn visit_tuple_1<A>(&self, input: &(A,)) -> Self::Output
+    where
+        A: Serialize;
 
     /// Visit and serialize an u8 type.
     fn visit_u8(&self, input: &u8) -> Self::Output;
