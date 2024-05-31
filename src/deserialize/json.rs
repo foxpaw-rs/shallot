@@ -125,33 +125,72 @@ impl<'a> Json<'a> {
     }
 
     /// Decode a string, taking into consideration escaped characters.
-    fn decode_string(&self, input: &<Self as Deserializer>::Input, kind: &str) -> Result<String> {
-        let stripped = input.strip_prefix('"').ok_or_else(|| {
+    fn decode_string(&self, input: &<Self as Deserializer>::Input, _kind: &str) -> Result<String> {
+        let stripped = self.strip_prefix(input, "\"")?;
+        let stripped = self.strip_suffix(stripped, "\"")?;
+        Ok(stripped.replace("\\\"", "\"").replace("\\\\", "\\"))
+    }
+
+    /// Retrieve from input until the delimiter is reached, returning the part
+    /// prior and following the delimiter. This will also take into consideration
+    /// quoted strings.
+    fn until(input: &'a str, delimiter: &'a str) -> Option<(&'a str, &'a str)> {
+        if input.is_empty() {
+            return None;
+        }
+
+        let mut quote = false;
+        let mut found = None;
+        for (p, c) in input.chars().enumerate() {
+            match c {
+                '"' => quote = !quote,
+                ',' if !quote => {
+                    found = Some(p);
+                    break;
+                },
+                _ => continue
+            }
+        }
+
+        if let Some(f) = found {
+            let result = input.split_at(f);
+            Some((result.0, result.1.trim_start_matches(delimiter)))
+        } else {
+            Some((input, ""))
+        }
+
+    }
+
+    /// String a prefix and suffix from the input.
+    fn strip_prefix(&self, input: &'a str, prefix: &str) -> Result<&'a str> {
+        input.strip_prefix(prefix).ok_or_else(|| {
             let e: Error = match input.chars().next() {
                 Some(f) => Syntax::new(self.row.get(), self.col.get())
                     .unexpected(f.encode_utf8(&mut [0_u8; 4]))
-                    .expected("\"")
+                    .expected(prefix)
                     .into(),
                 None => Syntax::new(self.row.get(), self.col.get())
-                    .expected(kind)
+                    .expected(prefix)
                     .into(),
             };
             e
-        })?;
+        })
+    }
 
-        let stripped = stripped.strip_suffix('"').ok_or_else(|| {
-            let e: Error = match stripped.chars().last() {
-                Some(_) => Syntax::new(self.row.get(), self.col.get() + input.len())
-                    .expected("\"")
+    /// String a suffix from the input.
+    fn strip_suffix(&self, input: &'a str, suffix: &str) -> Result<&'a str> {
+        input.strip_suffix(suffix).ok_or_else(|| {
+            let e: Error = match input.chars().last() {
+                Some(f) => Syntax::new(self.row.get(), self.col.get() + input.len())
+                    .unexpected(f.encode_utf8(&mut [0_u8; 4]))
+                    .expected(suffix)
                     .into(),
-                None => Syntax::new(self.row.get(), self.col.get())
-                    .expected(kind)
+                None => Syntax::new(self.row.get(), self.col.get() + 1)
+                    .expected(suffix)
                     .into(),
             };
             e
-        })?;
-
-        Ok(stripped.replace("\\\"", "\"").replace("\\\\", "\\"))
+        })
     }
 
     /// Update the row and col values.
@@ -492,11 +531,61 @@ impl<'a> Deserializer for Json<'a> {
         self.decode_string(&input.trim(), "string")
     }
 
-    /// Visit and deserialize an u8 type.
+    /// Visit and deserialize a tuple type of size 1.
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8,) = json.deserialize(&"[1]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    fn visit_tuple_1<A>(&self, input: &Self::Input) -> Result<(A,)>
+    where
+        A: Deserialize,
+    {
+        let mut stripped = self.strip_prefix(input.trim(), "[")?;
+        stripped = self.strip_suffix(stripped, "]")?;
+
+        let row = self.row.get();
+        let col = self.col.get();
+        self.update(&input.split_inclusive('[').next().ok_or_else(|| {
+            let e: Error = Syntax::new(self.row.get(), self.col.get()).into();
+            e
+        })?)?;
+
+        let (first, remainder) = &Self::until(stripped, ",").ok_or_else(|| {
+            let e: Error = Overflow::new(self.row.get(), self.col.get())
+                .kind("(A,)")
+                .into();
+            e
+        })?;
+
+        let result = (A::accept(self, &first)?,);
+
+        if Self::until(remainder, ",").is_some() {
+            return Err(Overflow::new(self.row.get(), self.col.get())
+                .kind("(A,)")
+                .into());
+        }
+
+        self.row.set(row);
+        self.col.set(col);
+        Ok(result)
+    }
+
+    /// Visit and deserialize an u8 type.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///z
     /// # Examples
     /// ```rust
     /// use shallot::error::Result;
@@ -768,7 +857,7 @@ mod tests {
     /// Test Json::visit_char correctly errors when empty.
     #[test]
     fn visit_char_empty() {
-        let expected = Err(Syntax::new(1, 1).expected("char").into());
+        let expected = Err(Syntax::new(1, 1).expected("\"").into());
         let actual = Json::new().visit_char(&"");
         assert_eq!(expected, actual);
 
@@ -812,7 +901,7 @@ mod tests {
     /// Test Json::visit_char correctly errors on missing trailing quote.
     #[test]
     fn visit_char_missing_trailing_quote() {
-        let expected = Err(Syntax::new(1, 3).expected("\"").into());
+        let expected = Err(Syntax::new(1, 2).unexpected("a").expected("\"").into());
         let actual = Json::new().visit_char(&"\"a");
         assert_eq!(expected, actual);
 
@@ -823,7 +912,7 @@ mod tests {
     /// Test Json::visit_char correctly errors on replaced trailing quote.
     #[test]
     fn visit_char_replaced_trailing_quote() {
-        let expected = Err(Syntax::new(1, 4).expected("\"").into());
+        let expected = Err(Syntax::new(1, 3).unexpected("b").expected("\"").into());
         let actual = Json::new().visit_char(&"\"ab");
         assert_eq!(expected, actual);
 
@@ -834,7 +923,7 @@ mod tests {
     /// Test Json::visit_char correctly errors on one quote.
     #[test]
     fn visit_char_one_quote() {
-        let expected = Err(Syntax::new(1, 1).expected("char").into());
+        let expected = Err(Syntax::new(1, 2).expected("\"").into());
         let actual = Json::new().visit_char(&"\"");
         assert_eq!(expected, actual);
 
@@ -1906,7 +1995,7 @@ mod tests {
     /// Test Json::visit_string correctly errors when empty.
     #[test]
     fn visit_string_empty() {
-        let expected = Err(Syntax::new(1, 1).expected("string").into());
+        let expected = Err(Syntax::new(1, 1).expected("\"").into());
         let actual = Json::new().visit_string(&"");
         assert_eq!(expected, actual);
 
@@ -1928,7 +2017,7 @@ mod tests {
     /// Test Json::visit_string correctly errors on missing trailing quote.
     #[test]
     fn visit_string_missing_trailing_quote() {
-        let expected = Err(Syntax::new(1, 3).expected("\"").into());
+        let expected = Err(Syntax::new(1, 2).unexpected("a").expected("\"").into());
         let actual = Json::new().visit_string(&"\"a");
         assert_eq!(expected, actual);
 
@@ -1939,11 +2028,122 @@ mod tests {
     /// Test Json::visit_string correctly errors on one quote.
     #[test]
     fn visit_string_one_quote() {
-        let expected = Err(Syntax::new(1, 1).expected("string").into());
+        let expected = Err(Syntax::new(1, 2).expected("\"").into());
         let actual = Json::new().visit_string(&"\"");
         assert_eq!(expected, actual);
 
         let actual = Json::new().deserialize(&"\"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly deserializes a tuple type of size 1.
+    #[test]
+    fn visit_tuple_1_correct() {
+        let expected = Ok((1_u8,));
+        let actual = Json::new().visit_tuple_1(&"[1]");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly deserializes a tuple type of size 1
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_1_delimiter() {
+        let expected = Ok((',',));
+        let actual = Json::new().visit_tuple_1(&"[\",\"]");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[\",\"]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_1_whitespace() {
+        let expected = Ok((1_u8,));
+        let actual = Json::new().visit_tuple_1(&"  \n[1]  ");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"  \n[1]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_1_internal_whitespace() {
+        let expected = Ok((1_u8,));
+        let actual = Json::new().visit_tuple_1(&"[  \n1  ]");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[  \n1  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors when empty.
+    #[test]
+    fn visit_tuple_1_empty() {
+        let expected: Result<(u8,)> = Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().visit_tuple_1(&"");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_1_nothing() {
+        let expected: Result<(u8,)> = Err(Overflow::new(1, 2).kind("(A,)").into());
+        let actual = Json::new().visit_tuple_1(&"[]");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_1_missing_leading_bracket() {
+        let expected: Result<(u8,)> = Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().visit_tuple_1(&"1]");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"1]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_1_single_bracket() {
+        let expected: Result<(u8,)> = Err(Syntax::new(1, 2).expected("]").into());
+        let actual = Json::new().visit_tuple_1(&"[");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_1_missing_trailing_bracket() {
+        let expected: Result<(u8,)> = Err(Syntax::new(1, 3).expected("]").unexpected("}").into());
+        let actual = Json::new().visit_tuple_1(&"[1}");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[1}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors overflow.
+    #[test]
+    fn visit_tuple_1_overflow() {
+        let expected: Result<(u8,)> = Err(Overflow::new(1, 2).kind("(A,)").into());
+        let actual = Json::new().visit_tuple_1(&"[1, 2]");
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().deserialize(&"[1, 2]");
         assert_eq!(expected, actual);
     }
 

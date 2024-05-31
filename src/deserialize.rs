@@ -37,6 +37,24 @@ impl Deserialize for () {
     }
 }
 
+impl<A> Deserialize for (A,)
+where
+    A: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_1(input)
+    }
+}
+
 impl Deserialize for bool {
     /// Accept a deserializer, allowing it to deserialize this item. Note that
     /// this is an internal method used to deserialize from the Deserializer and is
@@ -373,6 +391,14 @@ pub trait Deserializer {
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
     fn visit_string(&self, input: &Self::Input) -> Result<String>;
+
+    /// Visit and deserialize a tuple type of size 1.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn visit_tuple_1<A>(&self, input: &Self::Input) -> Result<(A,)>
+    where
+        A: Deserialize;
 
     /// Visit and deserialize a u8 type.
     ///
