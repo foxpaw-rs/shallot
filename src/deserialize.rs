@@ -55,6 +55,270 @@ where
     }
 }
 
+impl<A, B> Deserialize for (A, B)
+where
+    A: Deserialize,
+    B: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_2(input)
+    }
+}
+
+impl<A, B, C> Deserialize for (A, B, C)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_3(input)
+    }
+}
+
+impl<A, B, C, D> Deserialize for (A, B, C, D)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_4(input)
+    }
+}
+
+impl<A, B, C, D, E> Deserialize for (A, B, C, D, E)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_5(input)
+    }
+}
+
+impl<A, B, C, D, E, F> Deserialize for (A, B, C, D, E, F)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_6(input)
+    }
+}
+
+impl<A, B, C, D, E, F, G> Deserialize for (A, B, C, D, E, F, G)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+    G: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_7(input)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H> Deserialize for (A, B, C, D, E, F, G, H)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+    G: Deserialize,
+    H: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_8(input)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I> Deserialize for (A, B, C, D, E, F, G, H, I)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+    G: Deserialize,
+    H: Deserialize,
+    I: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_9(input)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I, J> Deserialize for (A, B, C, D, E, F, G, H, I, J)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+    G: Deserialize,
+    H: Deserialize,
+    I: Deserialize,
+    J: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_10(input)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I, J, K> Deserialize for (A, B, C, D, E, F, G, H, I, J, K)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+    G: Deserialize,
+    H: Deserialize,
+    I: Deserialize,
+    J: Deserialize,
+    K: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_11(input)
+    }
+}
+
+impl<A, B, C, D, E, F, G, H, I, J, K, L> Deserialize for (A, B, C, D, E, F, G, H, I, J, K, L)
+where
+    A: Deserialize,
+    B: Deserialize,
+    C: Deserialize,
+    D: Deserialize,
+    E: Deserialize,
+    F: Deserialize,
+    G: Deserialize,
+    H: Deserialize,
+    I: Deserialize,
+    J: Deserialize,
+    K: Deserialize,
+    L: Deserialize,
+{
+    /// Accept a deserializer, allowing it to deserialize this item. Note that
+    /// this is an internal method used to deserialize from the Deserializer and is
+    /// uncommon to use outside this library.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    fn accept<S>(deserializer: &S, input: &S::Input) -> Result<Self>
+    where
+        S: Deserializer,
+    {
+        deserializer.visit_tuple_12(input)
+    }
+}
+
 impl Deserialize for bool {
     /// Accept a deserializer, allowing it to deserialize this item. Note that
     /// this is an internal method used to deserialize from the Deserializer and is
@@ -396,9 +660,193 @@ pub trait Deserializer {
     ///
     /// # Errors
     /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_1<A>(&self, input: &Self::Input) -> Result<(A,)>
     where
         A: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 2.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_2<A, B>(&self, input: &Self::Input) -> Result<(A, B)>
+    where
+        A: Deserialize,
+        B: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 3.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_3<A, B, C>(&self, input: &Self::Input) -> Result<(A, B, C)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 4.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_4<A, B, C, D>(&self, input: &Self::Input) -> Result<(A, B, C, D)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 5.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_5<A, B, C, D, E>(&self, input: &Self::Input) -> Result<(A, B, C, D, E)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 6.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_6<A, B, C, D, E, F>(&self, input: &Self::Input) -> Result<(A, B, C, D, E, F)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 7.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_7<A, B, C, D, E, F, G>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 8.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_8<A, B, C, D, E, F, G, H>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 9.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_9<A, B, C, D, E, F, G, H, I>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 10.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_10<A, B, C, D, E, F, G, H, I, J>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I, J)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+        J: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 11.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_11<A, B, C, D, E, F, G, H, I, J, K>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I, J, K)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+        J: Deserialize,
+        K: Deserialize;
+
+    /// Visit and deserialize a tuple type of size 12.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    #[allow(clippy::type_complexity)]
+    fn visit_tuple_12<A, B, C, D, E, F, G, H, I, J, K, L>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I, J, K, L)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+        J: Deserialize,
+        K: Deserialize,
+        L: Deserialize;
 
     /// Visit and deserialize a u8 type.
     ///

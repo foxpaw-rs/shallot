@@ -172,7 +172,7 @@ impl<'a> Json<'a> {
         let mut found = None;
         for (n, c) in input.chars().enumerate() {
             match c {
-                c if (c == '\"' && !backslash && c == until) || (until != '\"' && c == until) => {
+                c if !(quote || (until == '\"' && backslash)) && c == until => {
                     found = Some(n);
                     break;
                 }
@@ -332,7 +332,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<f32>()
-            .map_err(|_| self.convert_float_error(input, "f32"))?;
+            .map_err(|_| self.convert_float_error(&trim.trim(), "f32"))?;
 
         if !result.is_finite() {
             return Err(Overflow::new(self.row.get(), self.col.get())
@@ -365,7 +365,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<f64>()
-            .map_err(|_| self.convert_float_error(input, "f64"))?;
+            .map_err(|_| self.convert_float_error(&trim.trim(), "f64"))?;
 
         if !result.is_finite() {
             return Err(Overflow::new(self.row.get(), self.col.get())
@@ -398,7 +398,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<i8>()
-            .map_err(|err| self.convert_int_error(&err, input, "i8"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "i8"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -424,7 +424,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<i16>()
-            .map_err(|err| self.convert_int_error(&err, input, "i16"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "i16"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -450,7 +450,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<i32>()
-            .map_err(|err| self.convert_int_error(&err, input, "i32"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "i32"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -476,7 +476,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<i64>()
-            .map_err(|err| self.convert_int_error(&err, input, "i64"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "i64"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -502,7 +502,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<i128>()
-            .map_err(|err| self.convert_int_error(&err, input, "i128"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "i128"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -528,7 +528,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<isize>()
-            .map_err(|err| self.convert_int_error(&err, input, "isize"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "isize"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -572,6 +572,7 @@ impl<'a> Deserializer for Json<'a> {
     ///     Ok(())
     /// }
     /// ```
+    #[allow(clippy::many_single_char_names)]
     fn visit_tuple_1<A>(&self, input: &Self::Input) -> Result<(A,)>
     where
         A: Deserialize,
@@ -580,7 +581,746 @@ impl<'a> Deserializer for Json<'a> {
         let (_, trim) = self.consume_expected(trim, "[")?;
 
         let (a, remainder) = self.take_until(trim, ']')?;
-        let result = (self.deserialize::<A>(&a)?,);
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a,);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 2.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8) = json.deserialize(&"[1, 2]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_2<A, B>(&self, input: &Self::Input) -> Result<(A, B)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ']')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 3.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8) = json.deserialize(&"[1, 2, 3]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_3<A, B, C>(&self, input: &Self::Input) -> Result<(A, B, C)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ']')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 4.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8) = json.deserialize(&"[1, 2, 3, 4]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_4<A, B, C, D>(&self, input: &Self::Input) -> Result<(A, B, C, D)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ']')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 5.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8) = json.deserialize(&"[
+    ///         1, 2, 3, 4, 5
+    ///     ]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_5<A, B, C, D, E>(&self, input: &Self::Input) -> Result<(A, B, C, D, E)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ']')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 6.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8) = json.deserialize(&"[
+    ///         1, 2, 3, 4, 5, 6
+    ///     ]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_6<A, B, C, D, E, F>(&self, input: &Self::Input) -> Result<(A, B, C, D, E, F)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ']')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 7.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8, u8) = json.deserialize(&"[
+    ///         1, 2, 3, 4, 5, 6, 7
+    ///     ]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_7<A, B, C, D, E, F, G>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ',')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (g, remainder) = self.take_until(remainder, ']')?;
+        let g = self.deserialize::<G>(&g)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f, g);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 8.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8, u8, u8) = json.deserialize(&"[
+    ///         1, 2, 3, 4, 5, 6, 7, 8
+    ///     ]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_8<A, B, C, D, E, F, G, H>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ',')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (g, remainder) = self.take_until(remainder, ',')?;
+        let g = self.deserialize::<G>(&g)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (h, remainder) = self.take_until(remainder, ']')?;
+        let h = self.deserialize::<H>(&h)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f, g, h);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 9.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8, u8, u8, u8) = json.deserialize(&"[
+    ///         1, 2, 3, 4, 5, 6, 7, 8, 9
+    ///     ]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_9<A, B, C, D, E, F, G, H, I>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ',')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (g, remainder) = self.take_until(remainder, ',')?;
+        let g = self.deserialize::<G>(&g)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (h, remainder) = self.take_until(remainder, ',')?;
+        let h = self.deserialize::<H>(&h)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (i, remainder) = self.take_until(remainder, ']')?;
+        let i = self.deserialize::<I>(&i)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f, g, h, i);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    
+    /// Visit and deserialize a tuple type of size 10.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) =
+    ///         json.deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_10<A, B, C, D, E, F, G, H, I, J>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I, J)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+        J: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ',')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (g, remainder) = self.take_until(remainder, ',')?;
+        let g = self.deserialize::<G>(&g)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (h, remainder) = self.take_until(remainder, ',')?;
+        let h = self.deserialize::<H>(&h)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (i, remainder) = self.take_until(remainder, ',')?;
+        let i = self.deserialize::<I>(&i)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (j, remainder) = self.take_until(remainder, ']')?;
+        let j = self.deserialize::<J>(&j)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f, g, h, i, j);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 11.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) =
+    ///         json.deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_11<A, B, C, D, E, F, G, H, I, J, K>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I, J, K)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+        J: Deserialize,
+        K: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ',')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (g, remainder) = self.take_until(remainder, ',')?;
+        let g = self.deserialize::<G>(&g)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (h, remainder) = self.take_until(remainder, ',')?;
+        let h = self.deserialize::<H>(&h)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (i, remainder) = self.take_until(remainder, ',')?;
+        let i = self.deserialize::<I>(&i)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (j, remainder) = self.take_until(remainder, ',')?;
+        let j = self.deserialize::<J>(&j)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (k, remainder) = self.take_until(remainder, ']')?;
+        let k = self.deserialize::<K>(&k)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f, g, h, i, j, k);
+
+        self.consume_all(remainder);
+        Ok(result)
+    }
+
+    /// Visit and deserialize a tuple type of size 12.
+    ///
+    /// # Errors
+    /// Will error if the provided input does not deserialize to the correct item.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::error::Result;
+    /// use shallot::deserialize::{Deserializer, Json};
+    ///
+    /// fn main() -> Result<()> {
+    ///     let json = Json::new();
+    ///     let output: (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) =
+    ///         json.deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]")?;
+    ///     Ok(())
+    /// }
+    /// ```
+    #[allow(clippy::many_single_char_names)]
+    fn visit_tuple_12<A, B, C, D, E, F, G, H, I, J, K, L>(
+        &self,
+        input: &Self::Input,
+    ) -> Result<(A, B, C, D, E, F, G, H, I, J, K, L)>
+    where
+        A: Deserialize,
+        B: Deserialize,
+        C: Deserialize,
+        D: Deserialize,
+        E: Deserialize,
+        F: Deserialize,
+        G: Deserialize,
+        H: Deserialize,
+        I: Deserialize,
+        J: Deserialize,
+        K: Deserialize,
+        L: Deserialize,
+    {
+        let (_, trim) = self.consume_whitespace(input);
+        let (_, trim) = self.consume_expected(trim, "[")?;
+
+        let (a, remainder) = self.take_until(trim, ',')?;
+        let a = self.deserialize::<A>(&a)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (b, remainder) = self.take_until(remainder, ',')?;
+        let b = self.deserialize::<B>(&b)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (c, remainder) = self.take_until(remainder, ',')?;
+        let c = self.deserialize::<C>(&c)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (d, remainder) = self.take_until(remainder, ',')?;
+        let d = self.deserialize::<D>(&d)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (e, remainder) = self.take_until(remainder, ',')?;
+        let e = self.deserialize::<E>(&e)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (f, remainder) = self.take_until(remainder, ',')?;
+        let f = self.deserialize::<F>(&f)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (g, remainder) = self.take_until(remainder, ',')?;
+        let g = self.deserialize::<G>(&g)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (h, remainder) = self.take_until(remainder, ',')?;
+        let h = self.deserialize::<H>(&h)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (i, remainder) = self.take_until(remainder, ',')?;
+        let i = self.deserialize::<I>(&i)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (j, remainder) = self.take_until(remainder, ',')?;
+        let j = self.deserialize::<J>(&j)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (k, remainder) = self.take_until(remainder, ',')?;
+        let k = self.deserialize::<K>(&k)?;
+        let (_, remainder) = self.consume_expected(remainder, ",")?;
+
+        let (l, remainder) = self.take_until(remainder, ']')?;
+        let l = self.deserialize::<L>(&l)?;
+        let (_, remainder) = self.consume_expected(remainder, "]")?;
+
+        let result = (a, b, c, d, e, f, g, h, i, j, k, l);
 
         self.consume_all(remainder);
         Ok(result)
@@ -608,7 +1348,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<u8>()
-            .map_err(|err| self.convert_int_error(&err, input, "u8"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "u8"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -635,7 +1375,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<u16>()
-            .map_err(|err| self.convert_int_error(&err, input, "u16"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "u16"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -662,7 +1402,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<u32>()
-            .map_err(|err| self.convert_int_error(&err, input, "u32"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "u32"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -689,7 +1429,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<u64>()
-            .map_err(|err| self.convert_int_error(&err, input, "u64"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "u64"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -716,7 +1456,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<u128>()
-            .map_err(|err| self.convert_int_error(&err, input, "u128"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "u128"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -772,7 +1512,7 @@ impl<'a> Deserializer for Json<'a> {
         let result = trim
             .trim()
             .parse::<usize>()
-            .map_err(|err| self.convert_int_error(&err, input, "usize"))?;
+            .map_err(|err| self.convert_int_error(&err, &trim.trim(), "usize"))?;
         self.consume_all(trim);
         Ok(result)
     }
@@ -1796,11 +2536,1065 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
-    /// Test Json::visit_tuple_1 correctly errors overflow.
+    /// Test Json::visit_tuple_1 correctly errors on overflow.
     #[test]
     fn visit_tuple_1_overflow() {
         let expected: Result<(u8,)> = Err(Syntax::new(1, 3).unexpected(",").into());
         let actual = Json::new().deserialize(&"[1, 2]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly deserializes a tuple type of size 2.
+    #[test]
+    fn visit_tuple_2_correct() {
+        let expected = Ok((1_u8, 2_u8));
+        let actual = Json::new().deserialize(&"[1, 2]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly deserializes a tuple type of size 2
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_2_delimiter() {
+        let expected = Ok((',', 2_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_2_whitespace() {
+        let expected = Ok((1_u8, 2_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_2_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors when empty.
+    #[test]
+    fn visit_tuple_2_empty() {
+        let expected: Result<(u8, u8)> = Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_2_nothing() {
+        let expected: Result<(u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_2_missing_leading_bracket() {
+        let expected: Result<(u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_2_single_bracket() {
+        let expected: Result<(u8, u8)> = Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_2_missing_trailing_bracket() {
+        let expected: Result<(u8, u8)> =
+            Err(Syntax::new(1, 7).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_2_overflow() {
+        let expected: Result<(u8, u16)> = Err(Syntax::new(1, 6).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_2 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_2_underflow() {
+        let expected: Result<(u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly deserializes a tuple type of size 3.
+    #[test]
+    fn visit_tuple_3_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly deserializes a tuple type of size 3
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_3_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_3_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_3_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors when empty.
+    #[test]
+    fn visit_tuple_3_empty() {
+        let expected: Result<(u8, u8, u8)> = Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_3_nothing() {
+        let expected: Result<(u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_3_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_3_single_bracket() {
+        let expected: Result<(u8, u8, u8)> = Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_3_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8)> =
+            Err(Syntax::new(1, 10).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_3_overflow() {
+        let expected: Result<(u8, u8, u8)> = Err(Syntax::new(1, 9).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_3 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_3_underflow() {
+        let expected: Result<(u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_4 correctly deserializes a tuple type of size 4.
+    #[test]
+    fn visit_tuple_4_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly deserializes a tuple type of size 4
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_4_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_4_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_4_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3, \n4  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors when empty.
+    #[test]
+    fn visit_tuple_4_empty() {
+        let expected: Result<(u8, u8, u8, u8)> = Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_4_nothing() {
+        let expected: Result<(u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_4_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_4_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8)> = Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_4_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 13).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_4_overflow() {
+        let expected: Result<(u8, u8, u8, u8)> = Err(Syntax::new(1, 12).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_4 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_4_underflow() {
+        let expected: Result<(u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_5 correctly deserializes a tuple type of size 5.
+    #[test]
+    fn visit_tuple_5_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly deserializes a tuple type of size 5
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_5_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8, 5_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_5_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_5_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3, \n4, \n5  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors when empty.
+    #[test]
+    fn visit_tuple_5_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8)> = Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_5_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_5_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_5_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8)> = Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_5_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 16).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_5_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8)> = Err(Syntax::new(1, 15).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_5 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_5_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_6 correctly deserializes a tuple type of size 6.
+    #[test]
+    fn visit_tuple_6_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly deserializes a tuple type of size 6
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_6_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_6_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_6_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors when empty.
+    #[test]
+    fn visit_tuple_6_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_6_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_6_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_6_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_6_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 19).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_6_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 18).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_6 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_6_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_7 correctly deserializes a tuple type of size 7.
+    #[test]
+    fn visit_tuple_7_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly deserializes a tuple type of size 7
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_7_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6, 7]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_7_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6, 7]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_7_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6, \n7  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors when empty.
+    #[test]
+    fn visit_tuple_7_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_7_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_7_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6, 7]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_7_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_7_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 22).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_7_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 21).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_7 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_7_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_8 correctly deserializes a tuple type of size 8.
+    #[test]
+    fn visit_tuple_8_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly deserializes a tuple type of size 8
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_8_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6, 7, 8]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_8_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6, 7, 8]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_8_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6, \n7, \n8  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors when empty.
+    #[test]
+    fn visit_tuple_8_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_8_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_8_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6, 7, 8]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_8_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_8_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 25).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_8_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 24).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_8 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_8_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_9 correctly deserializes a tuple type of size 9.
+    #[test]
+    fn visit_tuple_9_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly deserializes a tuple type of size 9
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_9_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6, 7, 8, 9]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_9_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6, 7, 8, 9]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_9_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8));
+        let actual = Json::new().deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6, \n7, \n8, \n9  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors when empty.
+    #[test]
+    fn visit_tuple_9_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_9_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_9_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6, 7, 8, 9]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_9_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_9_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 28).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_9_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 27).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_9 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_9_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_10 correctly deserializes a tuple type of size 10.
+    #[test]
+    fn visit_tuple_10_correct() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly deserializes a tuple type of size 10
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_10_delimiter() {
+        let expected = Ok((',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_10_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_10_internal_whitespace() {
+        let expected = Ok((1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8));
+        let actual =
+            Json::new().deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6, \n7, \n8, \n9, \n10  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors when empty.
+    #[test]
+    fn visit_tuple_10_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_10_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_10_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_10_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_10_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 32).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_10_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 31).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_10 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_10_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_11 correctly deserializes a tuple type of size 11.
+    #[test]
+    fn visit_tuple_11_correct() {
+        let expected = Ok((
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
+        ));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly deserializes a tuple type of size 11
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_11_delimiter() {
+        let expected = Ok((
+            ',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
+        ));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_11_whitespace() {
+        let expected = Ok((
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
+        ));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_11_internal_whitespace() {
+        let expected = Ok((
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8,
+        ));
+        let actual = Json::new()
+            .deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6, \n7, \n8, \n9, \n10, \n11  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors when empty.
+    #[test]
+    fn visit_tuple_11_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_11_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_11_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_11_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_11_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 36).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_11_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 35).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_11 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_11_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+    /// Test Json::visit_tuple_12 correctly deserializes a tuple type of size 12.
+    #[test]
+    fn visit_tuple_12_correct() {
+        let expected = Ok((
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
+        ));
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly deserializes a tuple type of size 12
+    /// when a delimiter exists in a string.
+    #[test]
+    fn visit_tuple_12_delimiter() {
+        let expected = Ok((
+            ',', 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
+        ));
+        let actual = Json::new().deserialize(&"[\",\", 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly deserializes with whitespace.
+    #[test]
+    fn visit_tuple_12_whitespace() {
+        let expected = Ok((
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
+        ));
+        let actual = Json::new().deserialize(&"  \n[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  ");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly deserializes with internal whitespace.
+    #[test]
+    fn visit_tuple_12_internal_whitespace() {
+        let expected = Ok((
+            1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8,
+        ));
+        let actual = Json::new()
+            .deserialize(&"[  \n1, \n2, \n3, \n4, \n5, \n6, \n7, \n8, \n9, \n10, \n11, \n12  ]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors when empty.
+    #[test]
+    fn visit_tuple_12_empty() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").into());
+        let actual = Json::new().deserialize(&"");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors on an empty tuple.
+    #[test]
+    fn visit_tuple_12_nothing() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 3).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors with a missing leading bracket.
+    #[test]
+    fn visit_tuple_12_missing_leading_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 1).expected("[").unexpected("1").into());
+        let actual = Json::new().deserialize(&"1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors with a single bracket.
+    #[test]
+    fn visit_tuple_12_single_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 2).expected(",").into());
+        let actual = Json::new().deserialize(&"[");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors with a missing trailing bracket.
+    #[test]
+    fn visit_tuple_12_missing_trailing_bracket() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 40).expected("]").unexpected("}").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors on overflow.
+    #[test]
+    fn visit_tuple_12_overflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 39).unexpected(",").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors on underflow.
+    #[test]
+    fn visit_tuple_12_underflow() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
+        let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
 

@@ -541,17 +541,20 @@ pub trait Serializer {
     fn visit_string(&self, input: &String) -> Self::Output;
 
     /// Visit and serialize a tuple type of size 1.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_1<A>(&self, input: &(A,)) -> Self::Output
     where
         A: Serialize;
 
     /// Visit and serialize a tuple type of size 2.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_2<A, B>(&self, input: &(A, B)) -> Self::Output
     where
         A: Serialize,
         B: Serialize;
 
     /// Visit and serialize a tuple type of size 3.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_3<A, B, C>(&self, input: &(A, B, C)) -> Self::Output
     where
         A: Serialize,
@@ -559,6 +562,7 @@ pub trait Serializer {
         C: Serialize;
 
     /// Visit and serialize a tuple type of size 4.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_4<A, B, C, D>(&self, input: &(A, B, C, D)) -> Self::Output
     where
         A: Serialize,
@@ -567,6 +571,7 @@ pub trait Serializer {
         D: Serialize;
 
     /// Visit and serialize a tuple type of size 5.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_5<A, B, C, D, E>(&self, input: &(A, B, C, D, E)) -> Self::Output
     where
         A: Serialize,
@@ -576,6 +581,7 @@ pub trait Serializer {
         E: Serialize;
 
     /// Visit and serialize a tuple type of size 6.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_6<A, B, C, D, E, F>(&self, input: &(A, B, C, D, E, F)) -> Self::Output
     where
         A: Serialize,
@@ -586,6 +592,7 @@ pub trait Serializer {
         F: Serialize;
 
     /// Visit and serialize a tuple type of size 7.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_7<A, B, C, D, E, F, G>(&self, input: &(A, B, C, D, E, F, G)) -> Self::Output
     where
         A: Serialize,
@@ -597,6 +604,7 @@ pub trait Serializer {
         G: Serialize;
 
     /// Visit and serialize a tuple type of size 8.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_8<A, B, C, D, E, F, G, H>(
         &self,
         input: &(A, B, C, D, E, F, G, H),
@@ -612,6 +620,7 @@ pub trait Serializer {
         H: Serialize;
 
     /// Visit and serialize a tuple type of size 9.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_9<A, B, C, D, E, F, G, H, I>(
         &self,
         input: &(A, B, C, D, E, F, G, H, I),
@@ -628,6 +637,7 @@ pub trait Serializer {
         I: Serialize;
 
     /// Visit and serialize a tuple type of size 10.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_10<A, B, C, D, E, F, G, H, I, J>(
         &self,
         input: &(A, B, C, D, E, F, G, H, I, J),
@@ -645,6 +655,7 @@ pub trait Serializer {
         J: Serialize;
 
     /// Visit and serialize a tuple type of size 11.
+    #[allow(clippy::type_complexity)]
     fn visit_tuple_11<A, B, C, D, E, F, G, H, I, J, K>(
         &self,
         input: &(A, B, C, D, E, F, G, H, I, J, K),
