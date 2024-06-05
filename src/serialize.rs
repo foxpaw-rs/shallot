@@ -274,6 +274,21 @@ where
     }
 }
 
+impl<T, const N: usize> Serialize for [T; N] 
+where
+    T: Serialize
+{
+    /// Accept a serializer, allowing it to serialize this item. Note that this is
+    /// an internal method used to serialize from the Serializer and is uncommon to
+    /// use outside this library.
+    fn accept<S>(&self, serializer: &S) -> S::Output
+    where
+        S: Serializer,
+    {
+        serializer.visit_array(self)
+    }
+}
+
 impl Serialize for bool {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
@@ -502,6 +517,11 @@ pub trait Serializer {
     fn serialize<S>(&self, input: &S) -> Self::Output
     where
         S: Serialize + ?Sized;
+
+    /// Visit and serialize an array type.
+    fn visit_array<T>(&self, input: &[T]) -> Self::Output
+    where
+        T: Serialize;
 
     /// Visit and serialize a bool type.
     fn visit_bool(&self, input: &bool) -> Self::Output;

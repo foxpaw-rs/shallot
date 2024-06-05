@@ -64,6 +64,22 @@ impl Serializer for Json {
         input.accept(self)
     }
 
+    /// Visit and serialize an array type.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use shallot::serialize::{Json, Serializer};
+    ///
+    /// let json = Json::new();
+    /// let output = json.serialize(&[1, 2, 3]);
+    /// ```
+    fn visit_array<T>(&self, input: &[T]) -> Self::Output
+    where
+        T: Serialize
+    {
+        format!("[{}]", input.iter().map(|el| self.serialize(el)).collect::<Vec<_>>().join(", "))
+    }
+
     /// Visit and serialize a bool type.
     ///
     /// # Examples
@@ -693,6 +709,29 @@ mod tests {
     fn new_correct() {
         let expected = Json {};
         let actual = Json::new();
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_array correctly serializes an array type.
+    #[test]
+    fn visit_array_correct() {
+        let expected = "[1, 2, 3]".to_owned();
+        let actual = Json::new().visit_array(&[1, 2, 3]);
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&[1, 2, 3]);
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_array correctly serializes an empty array type.
+    #[test]
+    fn visit_array_empty() {
+        let expected = "[]".to_owned();
+        let value : [u8; 0] = [];
+        let actual = Json::new().visit_array(&value);
+        assert_eq!(expected, actual);
+
+        let actual = Json::new().serialize(&value);
         assert_eq!(expected, actual);
     }
 
