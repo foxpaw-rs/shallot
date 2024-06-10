@@ -75,9 +75,16 @@ impl Serializer for Json {
     /// ```
     fn visit_array<T>(&self, input: &[T]) -> Self::Output
     where
-        T: Serialize
+        T: Serialize,
     {
-        format!("[{}]", input.iter().map(|el| self.serialize(el)).collect::<Vec<_>>().join(", "))
+        format!(
+            "[{}]",
+            input
+                .iter()
+                .map(|el| self.serialize(el))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
     }
 
     /// Visit and serialize a bool type.
@@ -727,7 +734,7 @@ mod tests {
     #[test]
     fn visit_array_empty() {
         let expected = "[]".to_owned();
-        let value : [u8; 0] = [];
+        let value: [u8; 0] = [];
         let actual = Json::new().visit_array(&value);
         assert_eq!(expected, actual);
 

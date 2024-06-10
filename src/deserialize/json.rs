@@ -51,9 +51,17 @@ impl<'a> Json<'a> {
         (input, "")
     }
 
-    /// Consume until the expected value.
+    /// Consume the expected value.
     fn consume_expected(&self, input: &'a str, expected: &'a str) -> Result<(&'a str, &'a str)> {
         let taken = self.take_expected(input, expected)?;
+        self.consume_all(taken.0);
+        Ok(taken)
+    }
+
+    /// consume from the input until the delimiter is reached, considering
+    /// delimiters included within quotes.
+    fn consume_until(&self, input: &'a str, until: char) -> Result<(&'a str, &'a str)> {
+        let taken = self.take_until(input, until)?;
         self.consume_all(taken.0);
         Ok(taken)
     }
@@ -295,6 +303,7 @@ impl<'a> Deserializer for Json<'a> {
     fn visit_char(&self, input: &Self::Input) -> Result<char> {
         let (_, trim) = self.consume_whitespace(input);
         let string = self.decode_string(&trim.trim())?;
+
         let result = if string.len() > 1 {
             let e: Error = Overflow::new(self.row.get(), self.col.get())
                 .kind("char")
@@ -307,8 +316,18 @@ impl<'a> Deserializer for Json<'a> {
                     .into()
             })
         }?;
-        self.consume_all(trim);
-        Ok(result)
+
+        let (_, remainder) = self.consume_expected(trim, "\"")?;
+        let (_, remainder) = self.consume_until(remainder, '\"')?;
+        let (_, remainder) = self.consume_expected(remainder, "\"")?;
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize an f32 type.
@@ -552,8 +571,18 @@ impl<'a> Deserializer for Json<'a> {
     fn visit_string(&self, input: &Self::Input) -> Result<String> {
         let (_, trim) = self.consume_whitespace(input);
         let result = self.decode_string(&trim.trim())?;
-        self.consume_all(trim);
-        Ok(result)
+
+        let (_, remainder) = self.consume_expected(trim, "\"")?;
+        let (_, remainder) = self.consume_until(remainder, '\"')?;
+        let (_, remainder) = self.consume_expected(remainder, "\"")?;
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 1.
@@ -586,8 +615,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a,);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 2.
@@ -625,8 +660,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 3.
@@ -669,8 +710,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 4.
@@ -718,8 +765,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 5.
@@ -774,8 +827,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 6.
@@ -835,8 +894,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 7.
@@ -904,8 +969,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f, g);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 8.
@@ -978,8 +1049,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f, g, h);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 9.
@@ -1057,11 +1134,16 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f, g, h, i);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
-    
     /// Visit and deserialize a tuple type of size 10.
     ///
     /// # Errors
@@ -1141,8 +1223,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f, g, h, i, j);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 11.
@@ -1229,8 +1317,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f, g, h, i, j, k);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize a tuple type of size 12.
@@ -1322,8 +1416,14 @@ impl<'a> Deserializer for Json<'a> {
 
         let result = (a, b, c, d, e, f, g, h, i, j, k, l);
 
-        self.consume_all(remainder);
-        Ok(result)
+        let (_, remainder) = self.consume_whitespace(remainder);
+        if let Some(c) = remainder.chars().next() {
+            Err(Syntax::new(self.row.get(), self.col.get())
+                .unexpected(c.encode_utf8(&mut [0_u8; 4]))
+                .into())
+        } else {
+            Ok(result)
+        }
     }
 
     /// Visit and deserialize an u8 type.
@@ -1644,6 +1744,14 @@ mod tests {
     fn visit_char_replaced_trailing_quote() {
         let expected: Result<char> = Err(Syntax::new(1, 3).unexpected("b").expected("\"").into());
         let actual = Json::new().deserialize(&"\"ab");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_char correctly errors on trailing chars.
+    #[test]
+    fn visit_char_trailing_chars() {
+        let expected: Result<char> = Err(Syntax::new(1, 6).unexpected("b").into());
+        let actual = Json::new().deserialize(&"\"a\"  b");
         assert_eq!(expected, actual);
     }
 
@@ -2463,6 +2571,14 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    /// Test Json::visit_string correctly errors on trailing chars.
+    #[test]
+    fn visit_string_trailing_chars() {
+        let expected: Result<String> = Err(Syntax::new(1, 6).unexpected("b").into());
+        let actual = Json::new().deserialize(&"\"a\"  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_1 correctly deserializes a tuple type of size 1.
     #[test]
     fn visit_tuple_1_correct() {
@@ -2541,6 +2657,14 @@ mod tests {
     fn visit_tuple_1_overflow() {
         let expected: Result<(u8,)> = Err(Syntax::new(1, 3).unexpected(",").into());
         let actual = Json::new().deserialize(&"[1, 2]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_1 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_1_trailing_chars() {
+        let expected: Result<(u8,)> = Err(Syntax::new(1, 6).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1]  b");
         assert_eq!(expected, actual);
     }
 
@@ -2637,6 +2761,14 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    /// Test Json::visit_tuple_2 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_2_trailing_chars() {
+        let expected: Result<(u8, u8)> = Err(Syntax::new(1, 9).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_3 correctly deserializes a tuple type of size 3.
     #[test]
     fn visit_tuple_3_correct() {
@@ -2729,6 +2861,15 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_3 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_3_trailing_chars() {
+        let expected: Result<(u8, u8, u8)> = Err(Syntax::new(1, 12).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_4 correctly deserializes a tuple type of size 4.
     #[test]
     fn visit_tuple_4_correct() {
@@ -2821,6 +2962,15 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_4 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_4_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8)> = Err(Syntax::new(1, 15).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_5 correctly deserializes a tuple type of size 5.
     #[test]
     fn visit_tuple_5_correct() {
@@ -2913,6 +3063,15 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_5 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_5_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8)> = Err(Syntax::new(1, 18).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_6 correctly deserializes a tuple type of size 6.
     #[test]
     fn visit_tuple_6_correct() {
@@ -3008,6 +3167,16 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_6 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_6_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 21).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_7 correctly deserializes a tuple type of size 7.
     #[test]
     fn visit_tuple_7_correct() {
@@ -3103,6 +3272,16 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_7 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_7_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 24).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_8 correctly deserializes a tuple type of size 8.
     #[test]
     fn visit_tuple_8_correct() {
@@ -3198,6 +3377,16 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_8 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_8_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 27).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_9 correctly deserializes a tuple type of size 9.
     #[test]
     fn visit_tuple_9_correct() {
@@ -3293,6 +3482,16 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_9 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_9_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 30).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_10 correctly deserializes a tuple type of size 10.
     #[test]
     fn visit_tuple_10_correct() {
@@ -3389,6 +3588,16 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_10 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_10_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 34).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_11 correctly deserializes a tuple type of size 11.
     #[test]
     fn visit_tuple_11_correct() {
@@ -3493,6 +3702,16 @@ mod tests {
         let actual = Json::new().deserialize(&"[1]");
         assert_eq!(expected, actual);
     }
+
+    /// Test Json::visit_tuple_11 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_11_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 38).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]  b");
+        assert_eq!(expected, actual);
+    }
+
     /// Test Json::visit_tuple_12 correctly deserializes a tuple type of size 12.
     #[test]
     fn visit_tuple_12_correct() {
@@ -3595,6 +3814,15 @@ mod tests {
         let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
             Err(Syntax::new(1, 4).unexpected("]").expected(",").into());
         let actual = Json::new().deserialize(&"[1]");
+        assert_eq!(expected, actual);
+    }
+
+    /// Test Json::visit_tuple_12 correctly errors on trailing chars.
+    #[test]
+    fn visit_tuple_12_trailing_chars() {
+        let expected: Result<(u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8)> =
+            Err(Syntax::new(1, 42).unexpected("b").into());
+        let actual = Json::new().deserialize(&"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  b");
         assert_eq!(expected, actual);
     }
 

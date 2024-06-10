@@ -274,9 +274,9 @@ where
     }
 }
 
-impl<T, const N: usize> Serialize for [T; N] 
+impl<T, const N: usize> Serialize for [T; N]
 where
-    T: Serialize
+    T: Serialize,
 {
     /// Accept a serializer, allowing it to serialize this item. Note that this is
     /// an internal method used to serialize from the Serializer and is uncommon to
